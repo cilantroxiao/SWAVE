@@ -3,10 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
 from matplotlib.colors import LinearSegmentedColormap
-import h5py
 from difflib import SequenceMatcher
 import glob
-from num_waves import similar, data, states, mice
+from num_waves import similar, data, states, mice_unique
 
 
 grid_size = 128
@@ -107,10 +106,10 @@ def heat_quiver():
     heat_data = np.where(filter, heat_data, np.nan)
 
     #mask brain sides
-    load_mask = h5py.File('C:\\Users\\sandro\\Downloads\\week0allmask.mat', 'r')
-    mask = load_mask.get('papermask2')
-    mask = np.array(mask)
-    masked_heat_data = heat_data * mask
+    #load_mask = h5py.File('C:\\Users\\sandro\\Downloads\\week0allmask.mat', 'r')
+    #mask = load_mask.get('papermask2')
+    #mask = np.array(mask)
+    #masked_heat_data = heat_data * mask
 
     #set scale
     scale_min = np.nanmean(masked_heat_data) - np.nanstd(masked_heat_data)
@@ -135,15 +134,16 @@ def velocity_violin():
         'NREM': np.empty(grid_size**2),
         'REM': np.empty(grid_size**2),
     }
+    mouse_index = 0
     for index, mouse in enumerate(data):
-        df = pd.read_csv(f"D:\\Sandro_Code\\channel_wise_velocity\\{mouse}_velocity.csv")
+        df = pd.read_csv(f"D:\\Sandro_Code\\channel_wise_velocity\\{mouse}_velocity.csv", header=None)
         if 'WAKE' in mouse:
             length = len(dict['WAKE'])
             print(f"Mouse: {mouse}, Expected Length: {length}")
-        if 'NREM' in mouse:
+        elif 'NREM' in mouse:
             length = len(dict['NREM'])
             print(f"Mouse: {mouse}, Expected Length: {length}")
-        if 'REM' in mouse:
+        elif 'REM' in mouse:
             length = len(dict['REM'])
             print(f"Mouse: {mouse}, Expected Length: {length}")
         i = 0
@@ -164,18 +164,28 @@ def velocity_violin():
                             array[i] = value
                 i += 1
         print(f"Mouse: {mouse}, Actual Length: {i}")
-        if not similar(data[index], data[index+1]):
-            for key, array in dict.items():
-                dict[key] = np.log10(array[np.isfinite(array)])
+        if index + 1 < len(data):
+            if not similar(data[index], data[index+1]):
                 
-            fig, axes = plt.subplots(1, 3)
+                #for key, array in dict.items():
+                #    dict[key] = np.log10(array[np.isfinite(array)])
+                    
+                fig, axes = plt.subplots(1, 3)
+                fig.suptitle(f"{mice_unique[mouse_index]} Velocity Density Distribution", fontsize=15)
+                #wake
+                axes[0].violinplot(dict['WAKE'], showmedians=True)
+                axes[0].set_title('WAKE')
+                axes[0].set_ylabel("log10 channel velocity [mm/s]")
+                #nrem
+                axes[1].violinplot(dict['NREM'], showmedians=True)
+                axes[1].set_title('NREM')
+                #rem
+                axes[2].violinplot(dict['REM'], showmedians=True)
+                axes[2].set_title('REM')
+                
+                for key in dict:
+                    dict[key] = np.empty(grid_size**2)
 
-            #wake
-            axes[0].violinplot(dict['WAKE'], showmedians=True)
-            #nrem
-            axes[1].violinplot(dict['NREM'], showmedians=True)
-            #rem
-            axes[2].violinplot(dict['REM'], showmedians=True)
-
-            plt.show()
-heat_quiver()
+                plt.savefig(f"D:\\Sandro_Code\\velocity_violins\\{mice_unique[mouse_index]}_violin_plot")
+                mouse_index+=1
+velocity_violin()
