@@ -9,41 +9,38 @@ parser = argparse.ArgumentParser(
     description='Plots slow-wave direction data on a polar histogram',
     epilog='Hope this works')
 parser.add_argument('filenames', metavar='CSV', nargs='+', help='input wavefronts_direction_local')
-parser.add_argument('--wave_ids', type=int, metavar='N', nargs='*', help='input desired wavefronts (default is all)')
+parser.add_argument('--wave_ids', type=int, nargs='+', help='input desired wavefronts (default is all)')
 args = parser.parse_args()
 
-wave_ids_per_file = {}
-for filename in args.filenames:
-    wave_ids_per_file[filename] = args.wave_ids
+all_directionY = []
+all_directionX = []
 
-for filename, wave_ids in wave_ids_per_file.items():
+for i, filename in enumerate(args.filenames):
     df = pd.read_csv(Path(filename))
 
-    if len(wave_ids) == 0:
-        last_wave = df['wavefronts_id'].values[-1]
-        wave_ids = [i for i in range(last_wave + 1)]
-        wave_id = f"All {last_wave}"
-    else:
-        wave_id = ' '.join(map(str, wave_ids))
+    wave_ids = args.wave_ids if args.wave_ids else df['wavefronts_id'].unique()
 
-    directionY, directionX = [], []
-    for index, row in df.iterrows():
-        if row['wavefronts_id'] in wave_ids:
-            directionY.append(row['direction_local_y'])
-            directionX.append(row['direction_local_x'])
+    for wave_id in wave_ids:
+        group = df[df['wavefronts_id'] == wave_id]
 
-    # Calculate angles using arctan2
-    angles = np.arctan2(directionY, directionX)
+        directionY = group['direction_local_y'].tolist()
+        directionX = group['direction_local_x'].tolist()
 
-    # Create a polar histogram
-    fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
-    ax.hist(angles, bins=36, range=(-np.pi, np.pi), density=True)
+        all_directionY.extend(directionY)
+        all_directionX.extend(directionX)
 
-    # Calculate the average angle
-    average_angle = np.arctan2(np.mean(np.sin(angles)), np.mean(np.cos(angles)))
-    print(f"Wavefronts ID: {wave_id}, Average Angle: {average_angle}")
+# Calculate angles using arctan2
+angles = np.arctan2(all_directionY, all_directionX)
 
-    # Plot the average line
-    ax.plot([0, average_angle], [0, ax.get_ylim()[1]], color='red', linewidth=2)
+# Create a polar histogram
+fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
+ax.hist(angles, bins=36, range=(-np.pi, np.pi), density=True)
 
-    plt.show()
+# Calculate the average angle
+average_angle = np.arctan2(np.mean(np.sin(angles)), np.mean(np.cos(angles)))
+print(f"Average Angle: {average_angle}")
+
+# Plot the average line
+ax.plot([0, average_angle], [0, ax.get_ylim()[1]], color='red', linewidth=2)
+
+plt.show()
