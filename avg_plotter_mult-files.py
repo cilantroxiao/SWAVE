@@ -1,4 +1,5 @@
 # Average waves together
+#"D:\ANESTH_EricMs1Ket_KX_16\stage05_channel-wave_characterization\direction_local\\wavefronts_direction_local.csv"
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt

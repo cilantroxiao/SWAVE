@@ -11,6 +11,7 @@ from num_waves import similar, data, states, mice_unique
 grid_size = 128
 grid_average = [[np.zeros(3).tolist() for _ in range(grid_size)] for _ in range(grid_size)]
 averages = pd.DataFrame(grid_average)
+
 def individual_csvs():
     for file in data:
         filename = file.strip()
@@ -21,9 +22,21 @@ def individual_csvs():
             y = int(row['y_coords'])
             velocity = float(row['velocity_local'])
             x_direction = float(row['direction_local_x'])
-            y_direction = float(row['direction_local_y'])
-            grid.iloc[y,x] = [velocity, x_direction, y_direction]
-        grid.to_csv(Path(f"D:\\Sandro_Code\\channel_wise_velocity\\{filename}_velocity.csv"), index = False, header=False, mode='w+')
+            y_direction = float(row['direction_local_y'])            
+            grid.iloc[y,x][0] += velocity
+            grid.iloc[y,x][1] += x_direction
+            grid.iloc[y,x][2] += y_direction
+        max_wave = df['wavefronts_id'].iloc[-1]
+        for index, row in grid.iterrows():
+            for col_index, col in enumerate(row):
+                [i / max_wave for i in grid[index][col_index]]
+        np.savetxt(Path(f"D:\\Sandro_Code\\channel_wise_velocity\\{filename}_velocity.csv"), 
+                    grid,
+                    delimiter=',',
+                    header="",
+                    comments="" 
+                   )
+        print(f"{filename} done")
 def average_csv():
     csv_files = glob.glob('D:\\Sandro_Code\\channel_wise_velocity\\*velocity.csv')
     for row in range(grid_size):
@@ -188,4 +201,4 @@ def velocity_violin():
 
                 plt.savefig(f"D:\\Sandro_Code\\velocity_violins\\{mice_unique[mouse_index]}_violin_plot")
                 mouse_index+=1
-velocity_violin()
+individual_csvs()
