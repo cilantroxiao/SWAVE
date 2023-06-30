@@ -14,7 +14,6 @@ args = parser.parse_args()
 
 all_directionY = []
 all_directionX = []
-weights = []
 
 for i, filename in enumerate(args.filenames):
     df = pd.read_csv(Path(filename))
@@ -30,21 +29,19 @@ for i, filename in enumerate(args.filenames):
 
         all_directionY.extend(directionY)
         all_directionX.extend(directionX)
-        weights.extend([len(directionY)] * len(directionX))  # Using length as weights
 
 # Calculate angles using arctan2
 angles = np.arctan2(all_directionY, all_directionX)
-
-# Calculate the weighted average angle
-weighted_average_angle = np.arctan2(np.average(np.sin(angles), weights=weights),
-                                    np.average(np.cos(angles), weights=weights))
-print(f"Weighted Average Angle: {weighted_average_angle}")
 
 # Create a polar histogram
 fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
 ax.hist(angles, bins=36, range=(-np.pi, np.pi), density=True)
 
-# Plot the weighted average line
-ax.plot([0, weighted_average_angle], [0, ax.get_ylim()[1]], color='red', linewidth=2)
+# Calculate the average angle
+average_angle = np.arctan2(np.mean(np.sin(angles)), np.mean(np.cos(angles)))
+print(f"Average Angle: {average_angle}")
+
+# Plot the average line
+ax.plot([0, average_angle], [0, ax.get_ylim()[1]], color='red', linewidth=2)
 
 plt.show()
