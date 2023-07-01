@@ -16,8 +16,24 @@ all_directionY = []
 all_directionX = []
 weights = []
 
+def weight():
+    waves = []
+    for j, filename in enumerate(args.filenames):
+        df = pd.read_csv(Path(filename))
+
+        last_number = df['wavefronts_id'].iloc[-1]
+        waves.append(last_number)
+
+    goal = max(waves)
+
+    #For each wave id != to the max
+        # find the commmon factor and multiply it by each file's max length so that each file weighs the same
+
+
 for i, filename in enumerate(args.filenames):
     df = pd.read_csv(Path(filename))
+
+    last_number = df['wavefronts_id'].iloc[-1]
 
     wave_ids = args.wave_ids[i] if args.wave_ids else df['wavefronts_id'].unique()
     wave_id = ' '.join(map(str, wave_ids))
@@ -30,6 +46,7 @@ for i, filename in enumerate(args.filenames):
 
         all_directionY.extend(directionY)
         all_directionX.extend(directionX)
+
         weights.extend([len(directionY)] * len(directionX))  # Using length as weights
 
 # Calculate angles using arctan2
