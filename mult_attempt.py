@@ -15,25 +15,30 @@ args = parser.parse_args()
 all_directionY = []
 all_directionX = []
 weights = []
+all_weights = []     
 
-def weight():
-    waves = []
-    for j, filename in enumerate(args.filenames):
-        df = pd.read_csv(Path(filename))
+def weightCalc(goal, lastnum, df):
+    weights = []
+    factor = lastnum // goal  # Find the common factor
+    weight = factor * goal  # Multiply by max length
+    for i in range(len(df)):
+        weights.append(weight)
+    return weights
 
-        last_number = df['wavefronts_id'].iloc[-1]
-        waves.append(last_number)
-
-    goal = max(waves)
-
-    #For each wave id != to the max
-        # find the commmon factor and multiply it by each file's max length so that each file weighs the same
+amountOfWaves = []
+for j, filename in enumerate(args.filenames):
+    df = pd.read_csv(Path(filename))
+    last = df['wavefronts_id'].iloc[-1]
+    amountOfWaves.append(last)
+goals = max(amountOfWaves)
 
 
 for i, filename in enumerate(args.filenames):
     df = pd.read_csv(Path(filename))
 
     last_number = df['wavefronts_id'].iloc[-1]
+
+   
 
     wave_ids = args.wave_ids[i] if args.wave_ids else df['wavefronts_id'].unique()
     wave_id = ' '.join(map(str, wave_ids))
@@ -44,18 +49,25 @@ for i, filename in enumerate(args.filenames):
         directionY = group['direction_local_y'].tolist()
         directionX = group['direction_local_x'].tolist()
 
+        weights = weightCalc(goals, last_number, df)
+
         all_directionY.extend(directionY)
         all_directionX.extend(directionX)
 
-        weights.extend([len(directionY)] * len(directionX))  # Using length as weights
+        all_weights.extend(weights) 
 
 # Calculate angles using arctan2
 angles = np.arctan2(all_directionY, all_directionX)
+print(len(angles))
+print(len(all_weights))
+#PROBLEM NOW IS THAT THE LENGTHS OF THE TWO LISTS AREN'T THE SAME
+
 
 # Calculate the weighted average angle
-weighted_average_angle = np.arctan2(np.average(np.sin(angles), weights=weights),
-                                    np.average(np.cos(angles), weights=weights))
+weighted_average_angle = np.arctan2(np.average(np.sin(angles), weights=all_weights, axis=0), 
+                                    np.average(np.cos(angles), weights=all_weights, axis=0))  
 print(f"Weighted Average Angle: {weighted_average_angle}")
+
 
 # Create a polar histogram
 fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
