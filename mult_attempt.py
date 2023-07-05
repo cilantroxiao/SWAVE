@@ -16,18 +16,20 @@ all_directionY = []
 all_directionX = []
 weights = []
 all_weights = []     
+df_len = 0
 
-def weightCalc(goal, lastnum, df):
+def weightCalc(goal, lastnum, df_length):
     weights = []
     factor = lastnum // goal  # Find the common factor
     weight = factor * goal  # Multiply by max length
-    for i in range(len(df)):
+    for i in range(df_length):
         weights.append(weight)
     return weights
 
 amountOfWaves = []
 for j, filename in enumerate(args.filenames):
     df = pd.read_csv(Path(filename))
+    df_len += (len(df))
     last = df['wavefronts_id'].iloc[-1]
     amountOfWaves.append(last)
 goals = max(amountOfWaves)
@@ -38,10 +40,11 @@ for i, filename in enumerate(args.filenames):
 
     last_number = df['wavefronts_id'].iloc[-1]
 
-   
-
     wave_ids = args.wave_ids[i] if args.wave_ids else df['wavefronts_id'].unique()
     wave_id = ' '.join(map(str, wave_ids))
+
+    weights = weightCalc(goals, last_number, len(df))
+    all_weights.extend(weights) 
 
     for wave_id in wave_ids:
         group = df[df['wavefronts_id'] == wave_id]
@@ -49,25 +52,17 @@ for i, filename in enumerate(args.filenames):
         directionY = group['direction_local_y'].tolist()
         directionX = group['direction_local_x'].tolist()
 
-        weights = weightCalc(goals, last_number, df)
-
         all_directionY.extend(directionY)
         all_directionX.extend(directionX)
 
-        all_weights.extend(weights) 
-
 # Calculate angles using arctan2
 angles = np.arctan2(all_directionY, all_directionX)
-print(len(angles))
-print(len(all_weights))
-#PROBLEM NOW IS THAT THE LENGTHS OF THE TWO LISTS AREN'T THE SAME
-
+print(angles)
 
 # Calculate the weighted average angle
 weighted_average_angle = np.arctan2(np.average(np.sin(angles), weights=all_weights, axis=0), 
                                     np.average(np.cos(angles), weights=all_weights, axis=0))  
 print(f"Weighted Average Angle: {weighted_average_angle}")
-
 
 # Create a polar histogram
 fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
