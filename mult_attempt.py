@@ -20,7 +20,7 @@ df_len = 0
 
 def weightCalc(goal, lastnum, df_length):
     weights = []
-    factor = lastnum // goal  # Find the common factor
+    factor = goal / lastnum  # Find the common factor
     weight = factor * goal  # Multiply by max length
     for i in range(df_length):
         weights.append(weight)
@@ -57,7 +57,6 @@ for i, filename in enumerate(args.filenames):
 
 # Calculate angles using arctan2
 angles = np.arctan2(all_directionY, all_directionX)
-print(angles)
 
 # Calculate the weighted average angle
 weighted_average_angle = np.arctan2(np.average(np.sin(angles), weights=all_weights, axis=0), 
