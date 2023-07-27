@@ -3,13 +3,24 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 import argparse
+
+def parse_wave_ids(input_str):
+    wave_ids = []
+    for part in input_str.split(','):
+        if '-' in part:
+            start, end = part.split('-')[0], part.split('-')[1]
+            wave_ids.extend(range(int(start), int(end) + 1))
+        else:
+            wave_ids.append(int(part))
+    return wave_ids
     
 parser = argparse.ArgumentParser(
     prog='Polar Direction Plotter',
     description='Plots slow-wave direction data on a polar histogram',
     epilog='Hope this works')
 parser.add_argument('filenames', nargs='+', help='input wavefronts_direction_local')
-parser.add_argument('--wave_ids', type=int, metavar='N', nargs='*', action='append', help='input desired wavefronts')
+parser.add_argument('--wave_ids', type=parse_wave_ids, metavar='N', nargs='*', 
+                    help='input desired wavefronts (default is all). Delimit ranges by commas: w-x,y,z-a')
 args = parser.parse_args()
 
 #master list containing every x and y coord based on parameter/argument
@@ -54,7 +65,6 @@ for i, filename in enumerate(args.filenames):
         all_directionY.extend(directionY)
         all_directionX.extend(directionX)
 
-
 # Calculate angles using arctan2
 angles = np.arctan2(all_directionY, all_directionX)
 angles_w_avg = np.arctan2(avg_y_normalized, avg_x_normalized)
@@ -65,7 +75,7 @@ weighted_average_angle = np.arctan2(np.average(all_directionY, axis=0),
 weighted_average_angle1 = np.arctan2(np.average(avg_y_normalized, axis=0), 
                                     np.average(avg_x_normalized, axis=0))
 print('weighted with all vectors together', weighted_average_angle)
-print('weighted with each wave_id\'s average then averaged together', weighted_average_angle1)
+print('waves normalized individually then normalized together', weighted_average_angle1)
 
 # Create a polar histogram
 fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
@@ -80,7 +90,7 @@ ax.plot([0, weighted_average_angle], [0, ax.get_ylim()[1]], color='red', linewid
 ax1.plot([0, weighted_average_angle1], [0, ax1.get_ylim()[1]], color='black', linewidth=2)
 
 ax.set_title('weighted with all vectors together')
-ax1.set_title('weighed with each wave_id\'s average then averaged together')
+ax1.set_title('waves normalized individually then normalized together')
 
 plt.show()
 
