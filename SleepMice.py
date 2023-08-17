@@ -14,7 +14,6 @@ def parse_wave_ids(wave_ids_input):
                 wave_ids.extend(range(int(start), int(end) + 1))
             else:
                 wave_ids.append(int(part))
-    print(max(wave_ids))
     return wave_ids
   
 # Argument parser 
@@ -54,7 +53,7 @@ for entry in data:
     filename = entry['filename']
     wave_ids = entry['wave_ids']
     df = pd.read_csv(Path(f"D:\\SLEEP_{filename}_54\\stage05_channel-wave_characterization\\direction_local\\wavefronts_direction_local.csv"))
-
+    
     for wave_id in wave_ids:
         group = df[df['wavefronts_id'] == wave_id]
 
@@ -82,28 +81,38 @@ for entry in data:
         all_directionX.extend(directionX)
 
 # Calculate angles using arctan2
-angles = np.arctan2(all_directionY, all_directionX)
+angles = np.arctan2(directionY_normalized, directionX_normalized)
 angles_norm = np.arctan2(avg_y_normalized, avg_x_normalized)
 
 # Calculate the weighted average angle
-weighted_average_angle = np.arctan2(np.average(all_directionY), 
-                                    np.average(all_directionX))
+weighted_average_angle = np.arctan2(np.average(directionY_normalized), 
+                                    np.average(directionX_normalized))
 weighted_average_angle1 = np.arctan2(np.average(avg_y_normalized), 
                                     np.average(avg_x_normalized))
-print('weighted with all vectors together', weighted_average_angle)
-print('waves normalized individually then normalized together', weighted_average_angle1)
+print('normalized by vector length', weighted_average_angle)
+print('normalized by number of vectors within each wave', weighted_average_angle1)
 
 # Create a polar histogram each method
 fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
 ax.hist(angles, bins=36, range=(-np.pi, np.pi), density=True)
-ax.set_title('all vectors normalized together')
+ax.set_title('normalized by vector length')
 
 fig1, ax1 = plt.subplots(subplot_kw={'projection': 'polar'})
 ax1.hist(angles_norm, bins=36, range=(-np.pi, np.pi), density=True)
-ax1.set_title('normalized vectors by each wave individually then together')
+ax1.set_title('normalized by number of vectors within each wave')
 
 # Plot the weighted average line
 ax.plot([0, weighted_average_angle], [0, ax.get_ylim()[1]], color='red', linewidth=2)
 ax1.plot([0, weighted_average_angle1], [0, ax1.get_ylim()[1]], color='black', linewidth=2)
 
 plt.show()
+
+'''
+119_2
+132_1
+132_2
+328A_3
+E2
+L1
+L3
+'''
