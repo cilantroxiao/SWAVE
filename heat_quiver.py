@@ -3,15 +3,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
 from matplotlib.colors import LinearSegmentedColormap
+import h5py
 from difflib import SequenceMatcher
 import glob
-from num_waves import similar, data, states, mice_unique
+from num_waves import similar, data, states, mice
 
 
 grid_size = 128
 grid_average = [[np.zeros(3).tolist() for _ in range(grid_size)] for _ in range(grid_size)]
 averages = pd.DataFrame(grid_average)
-
 def individual_csvs():
     for file in data:
         filename = file.strip()
@@ -22,21 +22,9 @@ def individual_csvs():
             y = int(row['y_coords'])
             velocity = float(row['velocity_local'])
             x_direction = float(row['direction_local_x'])
-            y_direction = float(row['direction_local_y'])            
-            grid.iloc[y,x][0] += velocity
-            grid.iloc[y,x][1] += x_direction
-            grid.iloc[y,x][2] += y_direction
-        max_wave = df['wavefronts_id'].iloc[-1]
-        for index, row in grid.iterrows():
-            for col_index, col in enumerate(row):
-                [i / max_wave for i in grid[index][col_index]]
-        np.savetxt(Path(f"D:\\Sandro_Code\\channel_wise_velocity\\{filename}_velocity.csv"), 
-                    grid,
-                    delimiter=',',
-                    header="",
-                    comments="" 
-                   )
-        print(f"{filename} done")
+            y_direction = float(row['direction_local_y'])
+            grid.iloc[y,x] = [velocity, x_direction, y_direction]
+        grid.to_csv(Path(f"D:\\Sandro_Code\\channel_wise_velocity\\{filename}_velocity.csv"), index = False, header=False, mode='w+')
 def average_csv():
     csv_files = glob.glob('D:\\Sandro_Code\\channel_wise_velocity\\*velocity.csv')
     for row in range(grid_size):
@@ -119,10 +107,10 @@ def heat_quiver():
     heat_data = np.where(filter, heat_data, np.nan)
 
     #mask brain sides
-    #load_mask = h5py.File('C:\\Users\\sandro\\Downloads\\week0allmask.mat', 'r')
-    #mask = load_mask.get('papermask2')
-    #mask = np.array(mask)
-    #masked_heat_data = heat_data * mask
+    load_mask = h5py.File('C:\\Users\\sandro\\Downloads\\week0allmask.mat', 'r')
+    mask = load_mask.get('papermask2')
+    mask = np.array(mask)
+    masked_heat_data = heat_data * mask
 
     #set scale
     scale_min = np.nanmean(masked_heat_data) - np.nanstd(masked_heat_data)
@@ -147,16 +135,15 @@ def velocity_violin():
         'NREM': np.empty(grid_size**2),
         'REM': np.empty(grid_size**2),
     }
-    mouse_index = 0
     for index, mouse in enumerate(data):
-        df = pd.read_csv(f"D:\\Sandro_Code\\channel_wise_velocity\\{mouse}_velocity.csv", header=None)
+        df = pd.read_csv(f"D:\\Sandro_Code\\channel_wise_velocity\\{mouse}_velocity.csv")
         if 'WAKE' in mouse:
             length = len(dict['WAKE'])
             print(f"Mouse: {mouse}, Expected Length: {length}")
-        elif 'NREM' in mouse:
+        if 'NREM' in mouse:
             length = len(dict['NREM'])
             print(f"Mouse: {mouse}, Expected Length: {length}")
-        elif 'REM' in mouse:
+        if 'REM' in mouse:
             length = len(dict['REM'])
             print(f"Mouse: {mouse}, Expected Length: {length}")
         i = 0
@@ -177,28 +164,18 @@ def velocity_violin():
                             array[i] = value
                 i += 1
         print(f"Mouse: {mouse}, Actual Length: {i}")
-        if index + 1 < len(data):
-            if not similar(data[index], data[index+1]):
+        if not similar(data[index], data[index+1]):
+            for key, array in dict.items():
+                dict[key] = np.log10(array[np.isfinite(array)])
                 
-                #for key, array in dict.items():
-                #    dict[key] = np.log10(array[np.isfinite(array)])
-                    
-                fig, axes = plt.subplots(1, 3)
-                fig.suptitle(f"{mice_unique[mouse_index]} Velocity Density Distribution", fontsize=15)
-                #wake
-                axes[0].violinplot(dict['WAKE'], showmedians=True)
-                axes[0].set_title('WAKE')
-                axes[0].set_ylabel("log10 channel velocity [mm/s]")
-                #nrem
-                axes[1].violinplot(dict['NREM'], showmedians=True)
-                axes[1].set_title('NREM')
-                #rem
-                axes[2].violinplot(dict['REM'], showmedians=True)
-                axes[2].set_title('REM')
-                
-                for key in dict:
-                    dict[key] = np.empty(grid_size**2)
+            fig, axes = plt.subplots(1, 3)
 
-                plt.savefig(f"D:\\Sandro_Code\\velocity_violins\\{mice_unique[mouse_index]}_violin_plot")
-                mouse_index+=1
-individual_csvs()
+            #wake
+            axes[0].violinplot(dict['WAKE'], showmedians=True)
+            #nrem
+            axes[1].violinplot(dict['NREM'], showmedians=True)
+            #rem
+            axes[2].violinplot(dict['REM'], showmedians=True)
+
+            plt.show()
+heat_quiver()
