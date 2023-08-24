@@ -14,7 +14,7 @@ def parse_wave_ids(wave_ids_input):
                 wave_ids.extend(range(int(start), int(end) + 1))
             else:
                 wave_ids.append(int(part))
-    print(max(wave_ids))
+    #print(max(wave_ids))
     return wave_ids
   
 # Argument parser 
@@ -86,8 +86,8 @@ angles = np.arctan2(directionY_normalized, directionX_normalized)
 angles_norm = np.arctan2(avg_y_normalized, avg_x_normalized)
 
 # Calculate the weighted average angle
-weighted_average_angle = np.arctan2(np.average(all_directionY), 
-                                    np.average(all_directionX))
+weighted_average_angle = np.arctan2(np.average(directionY_normalized), 
+                                    np.average(directionX_normalized))
 weighted_average_angle1 = np.arctan2(np.average(avg_y_normalized), 
                                     np.average(avg_x_normalized))
 print('weighted with all vectors together', weighted_average_angle)

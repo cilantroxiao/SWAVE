@@ -23,6 +23,7 @@ def similar(a , b):
     s = SequenceMatcher(None, a, b)
     mice.append(a)
     if s.ratio() == 1:
+        print(f"{a} same mouse")
         return True
     else:
         return False

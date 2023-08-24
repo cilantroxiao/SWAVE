@@ -3,6 +3,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from difflib import SequenceMatcher
 from num_waves import similar, data, states, mice
+import numpy as np
 
 table = []
 for i in range(7):
@@ -44,15 +45,17 @@ for mouse in mice_unique:
     bgraph[2].set_color('green')
     plt.ylabel('average planarity')
     plt.title(mouse)
-    plt.savefig(f"D:\\Sandro_Code\\planarity\\{mouse}_avg_planarity.pdf")
+    plt.savefig(f"D:\\Sandro_Code\\planarity\\{mouse}_avg_planarity.png")
 plt.clf()
 
 #line plot
 for mouse in mice_unique:
     y = ['WAKE', 'NREM', 'REM']
     x = df[mouse]
-    plt.plot(y, x, label=mouse, marker='o', linewidth=2)
-plt.legend()
+    x_masked = np.where(x == 0, np.nan, x)
+    plt.plot(y, x_masked, label=mouse, marker='o', linewidth=2)
+plt.legend(loc='upper left', bbox_to_anchor=(1.05, 1), fontsize='small')
 plt.title('Average Planarity Across States Comparison')
-plt.savefig('D:\\Sandro_Code\\planarity\\avg_planarity_comparison.pdf')
+plt.tight_layout()
+plt.savefig('D:\\Sandro_Code\\planarity\\avg_planarity_comparison.png')
 plt.clf()
