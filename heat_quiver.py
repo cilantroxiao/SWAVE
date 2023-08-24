@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
+<<<<<<< HEAD
 import matplotlib.colors as mcolors
 from difflib import SequenceMatcher
 import glob
@@ -9,6 +10,13 @@ import csv
 from num_waves import similar, data, states, mice_unique
 import os
 import argparse
+=======
+from matplotlib.colors import LinearSegmentedColormap
+import h5py
+from difflib import SequenceMatcher
+import glob
+from num_waves import similar, data, states, mice
+>>>>>>> e6d7ac195490f31a2292f49d708da523ff121bd4
 
 #parser = argparse.ArgumentParser(
 #                    prog='Velocity Heat Maps',
@@ -21,7 +29,12 @@ import argparse
 #args = parser.parse_args()
 
 grid_size = 128
+<<<<<<< HEAD
 #wave_ids = args.wave_ids.split(',')
+=======
+grid_average = [[np.zeros(3).tolist() for _ in range(grid_size)] for _ in range(grid_size)]
+averages = pd.DataFrame(grid_average)
+>>>>>>> e6d7ac195490f31a2292f49d708da523ff121bd4
 def individual_csvs():
     for file in data:
         filename = file.strip()
@@ -32,6 +45,7 @@ def individual_csvs():
         for index, row in df.iterrows():
             x = int(row['x_coords'])
             y = int(row['y_coords'])
+<<<<<<< HEAD
             velocity = float(row['velocity_local'])      
             grid[y][x] += velocity
             channel_wave_count[y][x] += 1   
@@ -45,6 +59,13 @@ def individual_csvs():
             writer.writerows(grid)
         
         print(f"{filename} done")
+=======
+            velocity = float(row['velocity_local'])
+            x_direction = float(row['direction_local_x'])
+            y_direction = float(row['direction_local_y'])
+            grid.iloc[y,x] = [velocity, x_direction, y_direction]
+        grid.to_csv(Path(f"D:\\Sandro_Code\\channel_wise_velocity\\{filename}_velocity.csv"), index = False, header=False, mode='w+')
+>>>>>>> e6d7ac195490f31a2292f49d708da523ff121bd4
 def average_csv():
     grid_average = [[0 for _ in range(grid_size)] for _ in range(grid_size)]
     averages_nrem, averages_rem, averages_wake = pd.DataFrame(grid_average), pd.DataFrame(grid_average), pd.DataFrame(grid_average)
@@ -90,6 +111,7 @@ def heat_quiver():
         row_shape, col_shape = df.shape
         heat_data = np.zeros((row_shape, col_shape))
 
+<<<<<<< HEAD
         #retrieve data from csv
         for row_index, row in df.iterrows():
             for col_index, col in enumerate(row):
@@ -144,4 +166,113 @@ def divide(df, size):
 #individual_csvs()
 #if args.avg:
 #    average_csv()
+=======
+    x = np.array([i for i in range(num_columns)])
+    y = np.array([i for i in range(num_rows)])
+    X,Y  = np.meshgrid(x,y)
+    row_shape, col_shape = df.shape
+    x_dir = np.zeros((row_shape, col_shape))
+    y_dir = np.zeros((row_shape, col_shape))
+    heat_data = np.zeros((row_shape, col_shape))
+
+    #retrieve data from csv
+    for row_index, row in df.iterrows():
+        for col_index, col in enumerate(row):
+            cell_value = row[col_index]
+            cell_value = cell_value.replace('[', '')
+            cell_value = cell_value.replace(']', '')
+            cell_value = cell_value.split(', ')
+            heat_data[row_index, col_index] = float(cell_value[0])
+            x_dir[row_index, col_index] = float(cell_value[1])
+            y_dir[row_index, col_index] = float(cell_value[2])
+
+    #normalize vector magnitude
+    vector_length = 1
+    lengths = np.sqrt(x_dir**2 + y_dir**2)
+    filter = (lengths != 0) & np.isfinite(lengths)
+    np.seterr(divide='ignore', invalid='ignore')
+    U = np.where(filter, x_dir * vector_length / lengths, 0)
+    V = np.where(filter, y_dir * vector_length / lengths, 0)
+    np.seterr(divide='warn', invalid='warn')
+
+    #mask 0 data
+    filter = (U != 0) & (V != 0)
+    U = np.where(filter, U, np.nan)
+    V = np.where(filter, V, np.nan)
+    filter = (heat_data != 0)
+    heat_data = np.where(filter, heat_data, np.nan)
+
+    #mask brain sides
+    load_mask = h5py.File('C:\\Users\\sandro\\Downloads\\week0allmask.mat', 'r')
+    mask = load_mask.get('papermask2')
+    mask = np.array(mask)
+    masked_heat_data = heat_data * mask
+
+    #set scale
+    scale_min = np.nanmean(masked_heat_data) - np.nanstd(masked_heat_data)
+    scale_max = np.nanmean(masked_heat_data) + np.nanstd(masked_heat_data)
+
+    fig, ax = plt.subplots()
+
+    #quiverplot
+    vectorfield = ax.quiver(X, Y, U, V, scale=100, headlength=4, headaxislength=3, minshaft = 1.5, pivot='middle')
+
+    #heatmap
+    colors = ['blue', 'yellow']
+    cmap = LinearSegmentedColormap.from_list('CustomColormap', colors)
+    heatmap = ax.imshow(masked_heat_data, cmap=cmap, origin='lower', extent=[x.min(), x.max(), y.min(), y.max()], vmin= scale_min, vmax = scale_max)
+    ax.set_frame_on(False)
+    fig.colorbar(heatmap)
+    ax.set_aspect('equal')
+    plt.savefig(Path("D:\\Sandro_Code\\channel_wise_velocity\\wavefronts_test_ket.pdf"))
+def velocity_violin():
+    dict = {
+        'WAKE': np.empty(grid_size**2),
+        'NREM': np.empty(grid_size**2),
+        'REM': np.empty(grid_size**2),
+    }
+    for index, mouse in enumerate(data):
+        df = pd.read_csv(f"D:\\Sandro_Code\\channel_wise_velocity\\{mouse}_velocity.csv")
+        if 'WAKE' in mouse:
+            length = len(dict['WAKE'])
+            print(f"Mouse: {mouse}, Expected Length: {length}")
+        if 'NREM' in mouse:
+            length = len(dict['NREM'])
+            print(f"Mouse: {mouse}, Expected Length: {length}")
+        if 'REM' in mouse:
+            length = len(dict['REM'])
+            print(f"Mouse: {mouse}, Expected Length: {length}")
+        i = 0
+        for row_index, row in df.iterrows():
+            for col_index, col in enumerate(row):
+                cell_value = row[col_index]
+                cell_value = cell_value.replace('[', '')
+                cell_value = cell_value.replace(']', '')
+                cell_value = cell_value.split(', ')
+                value = float(cell_value[0])
+                if value <= 0:
+                    for key, array in dict.items():
+                        if key in mouse and i < length:
+                            array[i] = np.nan
+                else:
+                    for key, array in dict.items():
+                        if key in mouse and i < length:
+                            array[i] = value
+                i += 1
+        print(f"Mouse: {mouse}, Actual Length: {i}")
+        if not similar(data[index], data[index+1]):
+            for key, array in dict.items():
+                dict[key] = np.log10(array[np.isfinite(array)])
+                
+            fig, axes = plt.subplots(1, 3)
+
+            #wake
+            axes[0].violinplot(dict['WAKE'], showmedians=True)
+            #nrem
+            axes[1].violinplot(dict['NREM'], showmedians=True)
+            #rem
+            axes[2].violinplot(dict['REM'], showmedians=True)
+
+            plt.show()
+>>>>>>> e6d7ac195490f31a2292f49d708da523ff121bd4
 heat_quiver()
