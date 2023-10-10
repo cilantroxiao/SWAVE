@@ -6,23 +6,49 @@ import matplotlib.colors as mcolors
 from difflib import SequenceMatcher
 import glob
 import csv
-from num_waves import similar, data, states, mice_unique
+from num_waves import similar, states, mice_unique
 import os
 import argparse
 
+data = []
+# Function to parse input
+def parse_wave_ids(wave_ids_input):
+    wave_ids = []
+    if wave_ids_input:
+        for part in wave_ids_input.split(','):
+            if '-' in part:
+                start, end = part.split('-')[0], part.split('-')[1]
+                wave_ids.extend(range(int(start), int(end) + 1))
+            else:
+                wave_ids.append(int(part))
+    #print(max(wave_ids))
+    return wave_ids
+
+# Argument parser 
 parser = argparse.ArgumentParser(
-                    prog='Velocity Heat Maps',
-                    description='Plots slow-wave average velocity data per channel on a heat map',
-                    epilog='Hope this works')
-parser.add_argument("--norm", default=False, action="store_true",
-                    help="Flag if you want to to normalize values")
-#parser.add_argument('wave_ids', type=int, metavar='N', nargs='*', 
-#                    help='input desired wavefronts (default is all). Delimit ranges by commas: w-x,y,z-a')
+    prog='Polar Direction Plotter',
+    description='Plots heatmap of slow wave velocity data',
+    epilog='Hope this works')
+parser.add_argument('filename_wave_ids', nargs='+', metavar='filename:wave_ids', help='format: \'filename:wave_ids\', delimit ranges by commas: w-x,y,z-a')
+parser.add_argument('--norm', nargs='+', action='store_true', help='normalize data?')
 args = parser.parse_args()
-test = False
+
+for entry in args.filename_wave_ids:
+    if ':' in entry:    
+        filename, wave_ids_input = entry.split(':')
+        wave_ids = parse_wave_ids(wave_ids_input)
+        data.append({'filename': filename, 'wave_ids': wave_ids})
+    else:
+        filename = entry
+        df = pd.read_csv(Path(f"D:\{filename}\stage05_channel-wave_characterization\\channel-wise_measures.csv"))
+        last_wave_id = df['wavefronts_id'].max()
+        wave_ids_input = f'1-{last_wave_id}'  # Set wave_ids_input as a range from 1 to last_wave_id
+        wave_ids = parse_wave_ids(wave_ids_input)
+        data.append({'filename': filename, 'wave_ids': wave_ids})
+
+args.norm = False
 grid_size = 128
 out_path = 'D:\\Sandro_Code\\channel_wise_velocity'
-#wave_ids = args.wave_ids.split(',')
 def add(list, row, column, df):
     for file in list:
         df_file = pd.read_csv(file)
@@ -48,8 +74,7 @@ def Individual_CSVs():
             grid[y][x] += velocity
             channel_wave_count[y][x] += 1
         #if norm flagged
-        #args.norm
-        if test: 
+        if args.norm: 
             with open(Path(f"{out_path}\\{filename}_velocity_N.csv"), 'w', newline='') as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerows(grid)
@@ -69,7 +94,7 @@ def Average_CSVs():
     norm_path = f'{out_path}\\*velocity_N.csv'
     avg_path = f'{out_path}\\*velocity.csv'
     #args.norm
-    if test:
+    if args.norm:
         nrem_csv_files = [x for x in glob.glob(norm_path) if 'NREM' in x]
         rem_csv_files = [x for x in glob.glob(norm_path) if 'REM' in x]
         wake_csv_files = [x for x in glob.glob(norm_path) if 'WAKE' in x]
@@ -162,56 +187,10 @@ def Normalize():
         df.to_csv(Path(file), index = False, header = False)
         if i + 1 < len(csv_files) and not similar(file_name, os.path.splitext(os.path.basename(csv_files[i+1]))[0]):
             j += 1
+
+
 Individual_CSVs()
-#Average_CSVs()
-#if test: 
-#    Normalize()
+Average_CSVs()
+if args.norm:
+    Normalize()
 Heat_Mapper()
-
-#done, can delete
-def test_non_norm_on_one():
-        test = [
-        'SLEEP_L1_REM_54',
-        'SLEEP_L1_NREM_54',
-        'SLEEP_L1_WAKE_54'
-        ]
-        for file in test:
-            filename = file.strip()
-            df = pd.read_csv(Path(f"D:\\{filename}\\stage05_channel-wave_characterization\\channel-wise_measures.csv"))
-            grid = [[0 for _ in range(grid_size)] for _ in range(grid_size)]
-            channel_wave_count = [[0 for _ in range(grid_size)] for _ in range(grid_size)]
-            for index, row in df.iterrows():
-                x = int(row['x_coords'])
-                y = int(row['y_coords'])
-                velocity = float(row['velocity_local'])      
-                grid[y][x] += velocity
-                channel_wave_count[y][x] += 1
-    #commented for norm, keep for not norm
-            for index, row in enumerate(grid):
-                for col_index, col in enumerate(row):
-                    if channel_wave_count[index][col_index] != 0:
-                        grid[index][col_index] /= channel_wave_count[index][col_index]
-            #with open(Path(f"D:\\Sandro_Code\\channel_wise_velocity\\{filename}_velocity_norm.csv"), 'w', newline='') as csvfile:
-            with open(Path(f"D:\\Sandro_Code\\channel_wise_velocity\\{filename}_velocity.csv"), 'w', newline='') as csvfile:   
-                writer = csv.writer(csvfile)
-                writer.writerows(grid)
-
-            print(f"{filename} done")
-def norm_one():
-    sums = 0
-    csv_files = glob.glob('D:\\Sandro_Code\\channel_wise_velocity\\SLEEP_132_2_*_54_velocity.csv')
-    for i, file in enumerate(csv_files):
-        df = pd.read_csv(file, header=None)
-        file_name = os.path.splitext(os.path.basename(file))[0]
-        sums += df.sum().sum(axis=0)
-#        if i + 1 < len(csv_files) and not similar(file_name, os.path.splitext(os.path.basename(csv_files[i+1]))[0]):
-#            j += 1
-    denominator = sums / (128**2 * 3)
-    print(denominator)
-    for i, file in enumerate(csv_files):
-        df = pd.read_csv(file, header=None)
-        print(file)
-        file_name = os.path.splitext(os.path.basename(file))[0]
-        df.div(denominator).to_csv(Path(f"{file}"), index = False, header = False)
-    #        if i + 1 < len(csv_files) and not similar(file_name, os.path.splitext(os.path.basename(csv_files[i+1]))[0]):
-    #            j += 1
