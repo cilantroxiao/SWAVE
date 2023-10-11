@@ -6,7 +6,7 @@ import matplotlib.colors as mcolors
 from difflib import SequenceMatcher
 import glob
 import csv
-from step1 import states, similar, divide, add, Heat_Mapper
+from step1 import states, mice, similar, divide, add, Heat_Mapper
 import os
 import argparse
 from scipy.stats import gaussian_kde
@@ -102,9 +102,8 @@ def Avg_Planarity():
         for j in range(3):
             table[i].append(0)
     j=0
-    csv_files = glob.glob('{args.out}\\*velocity.csv')
+    csv_files = glob.glob(f'{args.out}\\*velocity.csv')
     for i, file in enumerate(csv_files):
-        df = pd.read_csv(file, header=None)
         file_name = os.path.splitext(os.path.basename(file))[0].replace('velocity','')
         i = 0
         df = pd.read_csv(Path(f"D:\\{file_name}\\stage05_wave_characterization\\label_planar\\wavefronts_label_planar.csv"), usecols=['planarity'])
@@ -125,8 +124,7 @@ def Avg_Planarity():
         df.insert(index, mice_unique[index], table[index], True)
     state = df.pop('States')
     df.insert(0, state.name, state)
-    df.to_csv(Path("D:\\Sandro_Code\\planarity\\avg_planarity.csv"), index = False, mode='w+')
-    print(df)
+    df.to_csv(Path(f"{args.out}\\avg_planarity.csv"), index = False, mode='w+')
 
     #individual bar graphs
     for mouse in mice_unique:
@@ -138,7 +136,7 @@ def Avg_Planarity():
         bgraph[2].set_color('green')
         plt.ylabel('average planarity')
         plt.title(mouse)
-        plt.savefig(f"D:\\Sandro_Code\\planarity\\{mouse}_avg_planarity.png")
+        plt.savefig(f"{args.out}\\{mouse}_avg_planarity.png")
     plt.clf()
 
     #line plot
@@ -150,7 +148,7 @@ def Avg_Planarity():
     plt.legend(loc='upper left', bbox_to_anchor=(1.05, 1), fontsize='small')
     plt.title('Average Planarity Across States Comparison')
     plt.tight_layout()
-    plt.savefig('D:\\Sandro_Code\\planarity\\avg_planarity_comparison.png')
+    plt.savefig(f'{args.out}\\avg_planarity_comparison.png')
     plt.clf()
 #need to fix
 def Num_Waves():
@@ -160,25 +158,20 @@ def Num_Waves():
         table.append([])
         for j in range(3):
             table[i].append(0)
-    #0 -> L1, 1 -> L3, 2 -> E2, 3 -> 119_2, 4 -> 328A_3, 5 -> 132_1, 6 -> 132_2
-
-    #(because sometimes data is missing) compares names, if 1 then they are the same mouse. If not 1, the new mouse.
-    j = 0
-    for i, file in enumerate(data):
-        filename = file.strip()
-        df = pd.read_csv(Path(f"D:\\{filename}\\stage05_channel-wave_characterization\\velocity_local\\wavefronts_velocity_local.csv"), usecols=['wavefronts_id'])
+    csv_files = glob.glob(f'{args.out}\\*velocity.csv')
+    for i, file in enumerate(csv_files):
+        file_name = os.path.splitext(os.path.basename(file))[0].replace('velocity','')
+        df = pd.read_csv(Path(f"D:\\{file_name}\\stage05_channel-wave_characterization\\velocity_local\\wavefronts_velocity_local.csv"), usecols=['wavefronts_id'])
         index = df.tail(1).index.item() #grabs last index's value in file
         num = df.at[index, 'wavefronts_id']
-        if 'WAKE' in str(filename):
+        if 'WAKE' in str(file_name):
             table[j][0] = num
-        elif 'NREM' in str(filename):
+        elif 'NREM' in str(file_name):
             table[j][1] = num
-        elif 'REM' in str(filename):
+        elif 'REM' in str(file_name):
             table[j][2] = num
-        #print(f"{filename} {num}")
-        if i + 1 < len(data): #if not similar, goes to next list in list
-            if not similar(data[i], data[i+1]):
-                j += 1
+        if i + 1 < len(csv_files) and not similar(file_name, os.path.splitext(os.path.basename(csv_files[i+1]))[0]):
+            j += 1
     df = pd.DataFrame({'States': states})
     mice_unique = []
     [mice_unique.append(item) for item in mice if item not in mice_unique]
@@ -186,8 +179,7 @@ def Num_Waves():
         df.insert(index, mice_unique[index], table[index], True)
     state = df.pop('States')
     df.insert(0, state.name, state)
-    df.to_csv(Path("D:\\Sandro_Code\\number_of_waves\\number_of_waves.csv"), index = False, mode='w+')
-    #print(df)
+    df.to_csv(Path(f"{args.out}\\number_of_waves.csv"), index = False, mode='w+')
 
     #individual bar graphs
     for mouse in mice_unique:
@@ -199,7 +191,7 @@ def Num_Waves():
         bgraph[2].set_color('green')
         plt.ylabel('number of waves')
         plt.title(mouse)
-        plt.savefig(f"D:\\Sandro_Code\\number_of_waves\\{mouse}_number_of_waves.pdf")
+        plt.savefig(f"{args.out}\\{mouse}_number_of_waves.pdf")
     plt.clf()
 
     #line plot
@@ -209,7 +201,7 @@ def Num_Waves():
         plt.plot(y, x, label=mouse, marker='o', linewidth=2)
     plt.legend()
     plt.title('Waves Across States Comparison')
-    plt.savefig('D:\\Sandro_Code\\number_of_waves\\number_of_waves_comparison.pdf')
+    plt.savefig(f"{args.out}\\number_of_waves_comparison.pdf")
     plt.clf()
 
     #total bar graph
@@ -223,7 +215,7 @@ def Num_Waves():
     bgraph[2].set_color('green')
     plt.title('Total Number of Waves')
     plt.xlabel('number of waves')
-    plt.savefig('D:\\Sandro_Code\\number_of_waves\\total_number_of_waves.pdf')
+    plt.savefig(f"{args.out}\\total_number_of_waves.pdf")
     plt.clf()
 if __name__ == "__main__":
     parser = create_parser()
