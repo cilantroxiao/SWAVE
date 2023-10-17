@@ -4,13 +4,13 @@ import numpy as np
 from pathlib import Path
 import matplotlib.colors as mcolors
 from difflib import SequenceMatcher
-from num_waves import states, mice
 import glob
 import csv
 import os
 import argparse
 grid_size = 128
 states = ['WAKE', 'NREM', 'REM']
+mice = []
 # Argument parser 
 def create_parser():
     parser = argparse.ArgumentParser(
@@ -45,7 +45,7 @@ def add(list, row, column, df):
         df_file = pd.read_csv(file)
         if row < df_file.shape[0] and column < df_file.shape[1]:
             cell_value = df_file.iloc[row, column]
-            print(cell_value)
+            
             df.iloc[row, column] += cell_value
 def divide(df, size):
     for index, row in enumerate(df):
@@ -75,7 +75,7 @@ def Polar_Histogram(filename, wave_ids):
     avg_y_normalized = []
     #Loop and extract data to normalize and calculate average values
     df = pd.read_csv(Path(f"D:\{filename}\stage05_channel-wave_characterization\direction_local\\wavefronts_direction_local.csv"))
-    
+    print(f"Graphing {filename} polar histogram...")
     for wave_id in wave_ids:
         group = df[df['wavefronts_id'] == wave_id]
 
@@ -129,11 +129,14 @@ def Polar_Histogram(filename, wave_ids):
 
     #fig.savefig(os.path.join(args.out, 'figure1.png'))
     #fig1.savefig(os.path.join(args.out, 'figure2.png'))
+    print(f"{args.out}\\{filename}_polar.png")
     plt.savefig(Path(f"{args.out}\\{filename}_polar.png"))
+    
     plt.close()
 def Individual_CSVs(filename, wave_ids):
     filename = filename.strip()
     df = pd.read_csv(Path(f"D:\\{filename}\\stage05_channel-wave_characterization\\channel-wise_measures.csv"))
+    print(f"Producing {filename} velocities CSV...")
     grid = [[0 for _ in range(grid_size)] for _ in range(grid_size)]
     channel_wave_count = [[0 for _ in range(grid_size)] for _ in range(grid_size)]
     for index, row in df.iterrows():
@@ -162,14 +165,17 @@ def Heat_Mapper(norm=False, avg=False):
     if norm and avg:
         return
     if norm:
+        print(f"Producing normalized heatmaps...")
         csv_files = glob.glob(f'{args.out}\\*velocity_N.csv')
         scale_min = 0
         scale_max = 2
     elif avg:
+        print(f"Producing average heatmaps...")
         csv_files = glob.glob(f'{args.out}\\*v-avg*.csv')
         scale_min = 0
         scale_max = 2
     else:
+        print(f"Producing velocity heatmaps...")
         csv_files = glob.glob(f'{args.out}\\*velocity.csv')
         scale_min = 43518.26345849037
         scale_max = 2272431268.2241783
@@ -201,11 +207,10 @@ def Heat_Mapper(norm=False, avg=False):
         ax.set_title(f'{os.path.splitext(file_name)[0]}')
         plt.savefig(Path(f"{args.out}\\{os.path.splitext(file_name)[0]}_heat.png"))
         plt.close()
-
 if __name__ == "__main__":
     parser = create_parser()
     args = parser.parse_args()
     filename, wave_ids = parse_waves()
     Polar_Histogram(filename, wave_ids)
     Individual_CSVs(filename, wave_ids)
-    Heat_Mapper()
+    Heat_Mapper(False, False)

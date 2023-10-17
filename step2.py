@@ -21,10 +21,12 @@ def create_parser():
     parser.add_argument('--avg', action='store_true', help='avg data at end?')
     parser.add_argument('--v', action='store_true', help='violin plot of velocities?')
     parser.add_argument('--out', required=True, help='step1outputdir = step2inputdir and step2outputdir')
+    parser.add_argument('--p', action='store_true', help='planarity')
+    parser.add_argument('--num', action='store_true', help='num of waves')
     parser.add_argument('--n', help='number of mice')
     return parser
 def Velocity_Violin():
-
+    print(f"Graphing velocity violins...")
     v_list = np.empty(grid_size**2)
 
     csv_files = glob.glob('{args.out}\\*velocity.csv')
@@ -52,7 +54,7 @@ def Velocity_Violin():
 def Normalize():
     csv_files = glob.glob(f'{args.out}\\*velocity_N.csv')
     j = 0
-    sums = [0] * len(args.n)
+    sums = [0] * int(args.n)
     for i, file in enumerate(csv_files):
         df = pd.read_csv(file, header=None)
         file_name = os.path.splitext(os.path.basename(file))[0]
@@ -75,11 +77,13 @@ def Average_CSVs():
     avg_path = f'{args.out}\\*velocity.csv'
     #args.norm
     if args.norm:
+        print("Producing average norm CSVs...")
         nrem_csv_files = [x for x in glob.glob(norm_path) if 'NREM' in x]
         rem_csv_files = [x for x in glob.glob(norm_path) if 'REM' in x]
         wake_csv_files = [x for x in glob.glob(norm_path) if 'WAKE' in x]
     #if not norm
     else:
+        print("Producing average CSVs...")
         nrem_csv_files = [x for x in glob.glob(avg_path) if 'NREM' in x]
         rem_csv_files = [x for x in glob.glob(avg_path) if 'REM' in x]
         wake_csv_files = [x for x in glob.glob(avg_path) if 'WAKE' in x]
@@ -96,15 +100,16 @@ def Average_CSVs():
     divide(averages_rem, len(rem_csv_files)).to_csv(Path(rem_avg_path), index = False, header = False, mode='w+')
     divide(averages_wake, len(wake_csv_files)).to_csv(Path(wake_avg_path), index = False, header = False, mode='w+')
 def Avg_Planarity():
+    print(f"Graphing planarity...")
     table = []
-    for i in range(7):
+    for i in range(int(args.n)):
         table.append([])
         for j in range(3):
             table[i].append(0)
     j=0
     csv_files = glob.glob(f'{args.out}\\*velocity.csv')
     for i, file in enumerate(csv_files):
-        file_name = os.path.splitext(os.path.basename(file))[0].replace('velocity','')
+        file_name = os.path.splitext(os.path.basename(file))[0].replace('_velocity','')
         i = 0
         df = pd.read_csv(Path(f"D:\\{file_name}\\stage05_wave_characterization\\label_planar\\wavefronts_label_planar.csv"), usecols=['planarity'])
         mean = df['planarity'].mean()
@@ -121,6 +126,7 @@ def Avg_Planarity():
     mice_unique = []
     [mice_unique.append(item) for item in mice if item not in mice_unique]
     for index, column in enumerate(table):
+        print(index)
         df.insert(index, mice_unique[index], table[index], True)
     state = df.pop('States')
     df.insert(0, state.name, state)
@@ -150,17 +156,17 @@ def Avg_Planarity():
     plt.tight_layout()
     plt.savefig(f'{args.out}\\avg_planarity_comparison.png')
     plt.clf()
-#need to fix
 def Num_Waves():
     #0 -> Wake, 1 -> NREM, 2 -> REM
+    print(f"Graphing number of waves...")
     table = []
-    for i in range(7):
+    for i in range(int(args.n)):
         table.append([])
         for j in range(3):
             table[i].append(0)
     csv_files = glob.glob(f'{args.out}\\*velocity.csv')
     for i, file in enumerate(csv_files):
-        file_name = os.path.splitext(os.path.basename(file))[0].replace('velocity','')
+        file_name = os.path.splitext(os.path.basename(file))[0].replace('_velocity','')
         df = pd.read_csv(Path(f"D:\\{file_name}\\stage05_channel-wave_characterization\\velocity_local\\wavefronts_velocity_local.csv"), usecols=['wavefronts_id'])
         index = df.tail(1).index.item() #grabs last index's value in file
         num = df.at[index, 'wavefronts_id']
@@ -226,4 +232,8 @@ if __name__ == "__main__":
         Normalize()
     if args.avg:
         Average_CSVs()
+    if args.p:
+        Avg_Planarity()
+    if args.num:
+        Num_Waves()
     Heat_Mapper(args.norm, args.avg)
