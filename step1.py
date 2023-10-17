@@ -34,7 +34,7 @@ def parse_waves():
                 wave_ids.append(int(part))
     else: #all waves
         filename = args.filename_wave_ids
-        df = pd.read_csv(Path(f"D:\{filename}\stage05_channel-wave_characterization\direction_local\\wavefronts_direction_local.csv"))
+        df = pd.read_csv(Path(f"D:\\{filename}\\stage05_channel-wave_characterization\\direction_local\\wavefronts_direction_local.csv"))
         last_wave_id = df['wavefronts_id'].max()
         wave_ids.extend(range(1, last_wave_id)) # Set wave_ids_input as a range from 1 to last_wave_id
                 
@@ -74,7 +74,7 @@ def Polar_Histogram(filename, wave_ids):
     avg_x_normalized = []
     avg_y_normalized = []
     #Loop and extract data to normalize and calculate average values
-    df = pd.read_csv(Path(f"D:\{filename}\stage05_channel-wave_characterization\direction_local\\wavefronts_direction_local.csv"))
+    df = pd.read_csv(Path(f"D:\\{filename}\\stage05_channel-wave_characterization\\direction_local\\wavefronts_direction_local.csv"))
     print(f"Graphing {filename} polar histogram...")
     for wave_id in wave_ids:
         group = df[df['wavefronts_id'] == wave_id]
@@ -115,23 +115,21 @@ def Polar_Histogram(filename, wave_ids):
     print('normalized by number of vectors within each wave', weighted_average_angle1)
 
     # Create a polar histogram each method
-    fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
+    fig, (ax, ax1) = plt.subplots(1,2, subplot_kw={'projection': 'polar'})
     ax.hist(angles, bins=36, range=(-np.pi, np.pi), density=True)
     ax.set_title('normalized by vector length')
 
-    fig1, ax1 = plt.subplots(subplot_kw={'projection': 'polar'})
+    #fig1, ax1 = plt.subplots(subplot_kw={'projection': 'polar'})
     ax1.hist(angles_norm, bins=36, range=(-np.pi, np.pi), density=True)
-    ax1.set_title('normalized by number of vectors within each wave')
+    title = ax1.set_title('normalized by # vectors in wave')
+    
 
     # Plot the weighted average line
     ax.plot([0, weighted_average_angle], [0, ax.get_ylim()[1]], color='red', linewidth=2)
     ax1.plot([0, weighted_average_angle1], [0, ax1.get_ylim()[1]], color='black', linewidth=2)
 
-    #fig.savefig(os.path.join(args.out, 'figure1.png'))
-    #fig1.savefig(os.path.join(args.out, 'figure2.png'))
     print(f"{args.out}\\{filename}_polar.png")
-    plt.savefig(Path(f"{args.out}\\{filename}_polar.png"))
-    
+    fig.savefig(os.path.join(args.out, f'{filename}_polar.png'))
     plt.close()
 def Individual_CSVs(filename, wave_ids):
     filename = filename.strip()
@@ -205,7 +203,7 @@ def Heat_Mapper(norm=False, avg=False):
         fig.colorbar(heatmap)
         ax.set_aspect('equal')
         ax.set_title(f'{os.path.splitext(file_name)[0]}')
-        plt.savefig(Path(f"{args.out}\\{os.path.splitext(file_name)[0]}_heat.png"))
+        plt.savefig(os.path.join(args.out, f'{filename}_heatmap.png'))
         plt.close()
 if __name__ == "__main__":
     parser = create_parser()
