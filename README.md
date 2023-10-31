@@ -5,7 +5,31 @@ Graphing COBRAWAP data
 Examining the Sleep Slow Wave changes propagating across the cortex. Visualize wave characteristics comparing/contrasing 4 behavioral states: Wake(W), NREM (NR), REM (R)
 
 # Inputs
-input.txt
+## input.txt
+
+The input text file contains a series of command lines. Each command line specifies the execution of Python scripts with certain arguments. The flags are as follows:
+
+  * --norm: Specifies normalization of data.
+  * --out 'directory'/'folder': Specifies the output directory or folder.
+  * --avg: Specifies average after data has been processed.
+  * --v: Specifies violin plot of velocities.
+  * --n 'num': Specifies number of Mice 
+  * --p: Specifies planarity
+  * --num: Specifies number of waves.
+  
+Here's an example below of how your input.txt should look:
+Format should be "Filename:wave_ids" or "Directory:wave_ids". If you want all wave_ids analyzed then just include the "filename".
+
+```python
+#filename:wave_ids --out .\\output --norm
+SLEEP_L1_REM_54 --out .\\output --norm
+SLEEP_L1_WAKE_54:1-30,32,34-50 --out .\\output --norm
+--norm --out .\\output --avg --v --n 1 --p --num #This line specifies flags to run Step2.py.
+```
+
+## run_script.py
+
+This Python script reads commands from an input text file and executes them. The input file is specified using the 'input_path' variable. Each line in the input file corresponds to a command that is executed by invoking Python scripts named "step1.py." After processing all commands, the script runs "step2.py" with the last command from the input file.
 
 # Non-Helper Functions:
 ## Step 1:
