@@ -8,50 +8,26 @@ import glob
 import csv
 import os
 import argparse
+import warnings
 grid_size = 128
 states = ['WAKE', 'NREM', 'REM']
 mice = []
-# Argument parser 
-def create_parser():
-    parser = argparse.ArgumentParser(
-        prog='Title',
-        description='Description',
-        epilog='Hope this works')
-    parser.add_argument('filename_wave_ids', help='input filenames and associated wavefronts')
-    parser.add_argument('--out', help='input output dir', required = True)
-    parser.add_argument('--norm', action='store_true', help='normalized csv?')
-    return parser
-#Loop through input of 'filename:wave_ids' and check for specific waves or all waves
-def parse_waves():
-    wave_ids = list()
-    if ':' in args.filename_wave_ids: #if waves/ranges specified
-        filename, wave_ids_input = args.filename_wave_ids.split(':')
-        for part in wave_ids_input.split(','):
-            if '-' in part:
-                start, end = part.split('-')[0], part.split('-')[1]
-                wave_ids.extend(range(int(start), int(end) + 1))
-            else:
-                wave_ids.append(int(part))
-    else: #all waves
-        filename = args.filename_wave_ids
-        df = pd.read_csv(Path(f"D:\\{filename}\\stage05_channel-wave_characterization\\direction_local\\wavefronts_direction_local.csv"))
-        last_wave_id = df['wavefronts_id'].max()
-        wave_ids.extend(range(1, last_wave_id)) # Set wave_ids_input as a range from 1 to last_wave_id
-                
-    return filename, wave_ids
+
 #helper functions
 def add(list, row, column, df):
     for file in list:
         df_file = pd.read_csv(file)
         if row < df_file.shape[0] and column < df_file.shape[1]:
-            cell_value = df_file.iloc[row, column]
+            cell_value = int(df_file.iloc[row, column])
             
             df.iloc[row, column] += cell_value
 def divide(df, size):
     for index, row in enumerate(df):
         for col_index, col in enumerate(df[index]):
-            if size != 0 and not np.isnan(col):
-                df.at[index,col_index] /= size
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=FutureWarning)
+                if size != 0 and not np.isnan(col):
+                    df.at[index,col_index] /= size
     return df
 def similar(a , b):
     for state in states:
@@ -62,10 +38,12 @@ def similar(a , b):
     s = SequenceMatcher(None, a, b)
     mice.append(a)
     if s.ratio() == 1:
+        print("same")
         return True
     else:
+        print("different")
         return False
-def Polar_Histogram(filename, wave_ids):
+def Polar_Histogram(path_head, filename, wave_ids, args):
     # Master list containing every x and y coord based on parameter/argument
     all_directionY = []
     all_directionX = []
@@ -74,7 +52,7 @@ def Polar_Histogram(filename, wave_ids):
     avg_x_normalized = []
     avg_y_normalized = []
     #Loop and extract data to normalize and calculate average values
-    df = pd.read_csv(Path(f"D:\\{filename}\\stage05_channel-wave_characterization\\direction_local\\wavefronts_direction_local.csv"))
+    df = pd.read_csv(Path(f"{path_head}\\stage05_channel-wave_characterization\\direction_local\\wavefronts_direction_local.csv"))
     print(f"Graphing {filename} polar histogram...")
     for wave_id in wave_ids:
         group = df[df['wavefronts_id'] == wave_id]
@@ -119,11 +97,9 @@ def Polar_Histogram(filename, wave_ids):
     ax.hist(angles, bins=36, range=(-np.pi, np.pi), density=True)
     ax.set_title('normalized by vector length')
 
-    #fig1, ax1 = plt.subplots(subplot_kw={'projection': 'polar'})
     ax1.hist(angles_norm, bins=36, range=(-np.pi, np.pi), density=True)
-    title = ax1.set_title('normalized by # vectors in wave')
+    ax1.set_title('normalized by # vectors in wave')
     
-
     # Plot the weighted average line
     ax.plot([0, weighted_average_angle], [0, ax.get_ylim()[1]], color='red', linewidth=2)
     ax1.plot([0, weighted_average_angle1], [0, ax1.get_ylim()[1]], color='black', linewidth=2)
@@ -131,9 +107,10 @@ def Polar_Histogram(filename, wave_ids):
     print(f"{args.out}\\{filename}_polar.png")
     fig.savefig(os.path.join(args.out, f'{filename}_polar.png'))
     plt.close()
-def Individual_CSVs(filename, wave_ids):
+
+def Individual_CSVs(path_head, filename, wave_ids, args):
     filename = filename.strip()
-    df = pd.read_csv(Path(f"D:\\{filename}\\stage05_channel-wave_characterization\\channel-wise_measures.csv"))
+    df = pd.read_csv(Path(f"{path_head}\\stage05_channel-wave_characterization\\channel-wise_measures.csv"))
     print(f"Producing {filename} velocities CSV...")
     grid = [[0 for _ in range(grid_size)] for _ in range(grid_size)]
     channel_wave_count = [[0 for _ in range(grid_size)] for _ in range(grid_size)]
@@ -159,7 +136,8 @@ def Individual_CSVs(filename, wave_ids):
             writer = csv.writer(csvfile)
             writer.writerows(grid)
     print(f"{filename} done")
-def Heat_Mapper(norm=False, avg=False):
+
+def Heat_Mapper(filename, args, norm=False, avg=False):
     if norm and avg:
         return
     if norm:
@@ -202,13 +180,12 @@ def Heat_Mapper(norm=False, avg=False):
         ax.set_frame_on(False)
         fig.colorbar(heatmap)
         ax.set_aspect('equal')
-        ax.set_title(f'{os.path.splitext(file_name)[0]}')
+        ax.set_title(filename)
         plt.savefig(os.path.join(args.out, f'{filename}_heatmap.png'))
         plt.close()
-if __name__ == "__main__":
-    parser = create_parser()
-    args = parser.parse_args()
-    filename, wave_ids = parse_waves()
-    Polar_Histogram(filename, wave_ids)
-    Individual_CSVs(filename, wave_ids)
-    Heat_Mapper(False, False)
+
+def run(data_path, filename, wave_ids, args):
+    path_head = os.path.join(data_path, filename)
+    Polar_Histogram(path_head, filename, wave_ids, args)
+    Individual_CSVs(path_head, filename, wave_ids, args)
+    Heat_Mapper(filename, args, False, False)
