@@ -1,8 +1,10 @@
 # Landsness Imaging COBRAWAP Project
-Graphing COBRAWAP data
 
-# Description
-Examining the Sleep Slow Wave changes propagating across the cortex. Visualize wave characteristics comparing/contrasing 4 behavioral states: Wake(W), NREM (NR), REM (R)
+This code uses the [COBRAWAP](https://cobrawap.readthedocs.io/en/latest/) pipeline to track slow waves propagating across the cortex. Calculate and visualize wave characteristics comparing/contrasing 4 behavioral states: Wake(W), NREM (NR), REM (R).
+
+# Instructions
+
+First, clone the repo or download the files. If you need to set up your Python environment, go to the section titled "Setting up Python Environment".
 
 # Inputs
 ## input.txt
@@ -129,17 +131,9 @@ Open your Python code project in VSCode:
 
 You can now start working with your code in VSCode.
 
-# Prerequisites
+# Dependencies
 
-The prerequisites for running the code include specific Python libraries, data files, and additional dependencies. Make sure you've fulfilled these prerequisites as mentioned in your code's manual. Install them using the `pip` command.
-
-To make sure that the latest version of pip is updated/installed
-
-```bash
-python -m pip install -U pip
-```
-
-Now to install the dependencies run these set of commands 
+The code **requires** the following Python libraries. Install them using [pip](https://pip.pypa.io/en/stable/getting-started/)
 
 ```bash
 python -m pip install pandas
