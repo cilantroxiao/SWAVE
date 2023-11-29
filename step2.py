@@ -12,21 +12,8 @@ import argparse
 from scipy.stats import gaussian_kde
 import seaborn as sns
 grid_size = 128
-def create_parser():
-    parser = argparse.ArgumentParser(
-        prog='Title2',
-        description='Description2',
-        epilog='Hope this works2')
-    
-    parser.add_argument('--norm', action='store_true', help='normalize data?')
-    parser.add_argument('--avg', action='store_true', help='avg data at end?')
-    parser.add_argument('--v', action='store_true', help='violin plot of velocities?')
-    parser.add_argument('--out', required=True, help='step1outputdir = step2inputdir and step2outputdir')
-    parser.add_argument('--p', action='store_true', help='planarity')
-    parser.add_argument('--num', action='store_true', help='num of waves')
-    parser.add_argument('--n', help='number of mice')
-    return parser
-def Velocity_Violin():
+
+def Velocity_Violin(path_head, args):
     print(f"Graphing velocity violins...")
     v_list = np.empty(grid_size**2)
 
@@ -44,23 +31,28 @@ def Velocity_Violin():
         fig, ax = plt.subplots()
         kde = gaussian_kde(v_list)
         scaling_factor = 1 / np.max(kde(v_list))
-        sns.violinplot(data=[v_list * scaling_factor], vert=False, ax=ax, bw='scott')
+        sns.violinplot(data=[v_list * scaling_factor], ax=ax, bw='scott')
 
         fig.suptitle(f"{file_name} Velocity Density Distribution", fontsize=15)
         ax.set_ylabel("log10 channel velocity [mm/s]")
         print(v_list)
         plt.savefig(os.path.join(args.out, f'{file_name}_violin.png'))
-def Normalize():
+
+def Normalize(path_head, args):
     print("Normalizing CSVs...")
     csv_files = glob.glob(f'{args.out}\\*velocity_N.csv')
     j = 0
+    print(args.n)
     sums = [0] * int(args.n)
     for i, file in enumerate(csv_files):
         df = pd.read_csv(file, header=None)
         file_name = os.path.splitext(os.path.basename(file))[0]
         sums[j] += df.sum().sum(axis=0)
-        if i + 1 < len(csv_files) and not similar(file_name, os.path.splitext(os.path.basename(csv_files[i+1]))[0]):
-            j += 1
+        if i + 1 < len(csv_files):
+            print("HELLO")
+            if similar(file_name, os.path.splitext(os.path.basename(csv_files[i+1]))[0]):
+                print("HELLOOOOOOO")
+                j += 1
     denominator = [x / (128**2 * 3) for x in sums]
     j = 0
     for i, file in enumerate(csv_files):
@@ -70,7 +62,8 @@ def Normalize():
         df.to_csv(Path(file), index = False, header = False)
         if i + 1 < len(csv_files) and not similar(file_name, os.path.splitext(os.path.basename(csv_files[i+1]))[0]):
             j += 1
-def Average_CSVs():
+
+def Average_CSVs(path_head, args):
     grid_average = [[0 for _ in range(grid_size)] for _ in range(grid_size)]
     averages_nrem, averages_rem, averages_wake = pd.DataFrame(grid_average), pd.DataFrame(grid_average), pd.DataFrame(grid_average)
     norm_path = f'{args.out}\\*velocity_N.csv'
@@ -99,7 +92,8 @@ def Average_CSVs():
     divide(averages_nrem, len(nrem_csv_files)).to_csv(Path(nrem_avg_path), index = False, header = False, mode='w+')
     divide(averages_rem, len(rem_csv_files)).to_csv(Path(rem_avg_path), index = False, header = False, mode='w+')
     divide(averages_wake, len(wake_csv_files)).to_csv(Path(wake_avg_path), index = False, header = False, mode='w+')
-def Avg_Planarity():
+
+def Avg_Planarity(path_head, args):
     print(f"Graphing planarity...")
     table = []
     for i in range(int(args.n)):
@@ -110,7 +104,7 @@ def Avg_Planarity():
     csv_files = glob.glob(f'{args.out}\\*velocity.csv')
     for i, file in enumerate(csv_files):
         file_name = os.path.splitext(os.path.basename(file))[0].replace('_velocity','')
-        df = pd.read_csv(Path(f"D:\\{file_name}\\stage05_wave_characterization\\label_planar\\wavefronts_label_planar.csv"), usecols=['planarity'])
+        df = pd.read_csv(Path(f"{path_head}\\stage05_wave_characterization\\label_planar\\wavefronts_label_planar.csv"), usecols=['planarity'])
         mean = df['planarity'].mean()
         if 'WAKE' in str(file_name):
             print(f"wake {j}")
@@ -161,7 +155,8 @@ def Avg_Planarity():
     plt.tight_layout()
     plt.savefig(f'{args.out}\\avg_planarity_comparison.png')
     plt.clf()
-def Num_Waves():
+
+def Num_Waves(path_head, args):
     #0 -> Wake, 1 -> NREM, 2 -> REM
     print(f"Graphing number of waves...")
     table = []
@@ -172,7 +167,7 @@ def Num_Waves():
     csv_files = glob.glob(f'{args.out}\\*velocity.csv')
     for i, file in enumerate(csv_files):
         file_name = os.path.splitext(os.path.basename(file))[0].replace('_velocity','')
-        df = pd.read_csv(Path(f"D:\\{file_name}\\stage05_channel-wave_characterization\\velocity_local\\wavefronts_velocity_local.csv"), usecols=['wavefronts_id'])
+        df = pd.read_csv(Path(f"{path_head}\\stage05_channel-wave_characterization\\velocity_local\\wavefronts_velocity_local.csv"), usecols=['wavefronts_id'])
         index = df.tail(1).index.item() #grabs last index's value in file
         num = df.at[index, 'wavefronts_id']
         if 'WAKE' in str(file_name):
@@ -228,17 +223,17 @@ def Num_Waves():
     plt.xlabel('number of waves')
     plt.savefig(f"{args.out}\\total_number_of_waves.pdf")
     plt.clf()
-if __name__ == "__main__":
-    parser = create_parser()
-    args = parser.parse_args()
+
+def run(data_path, filename, args):
+    path_head = os.path.join(data_path, filename)
     if args.v:
-        Velocity_Violin()
+        Velocity_Violin(path_head, args)
     if args.norm:
-        Normalize()
+        Normalize(path_head, args)
     if args.avg:
-        Average_CSVs()
+        Average_CSVs(path_head, args)
     #if args.p:
-    #    Avg_Planarity()
+     #   Avg_Planarity(path_head, args)
     #if args.num:
-    #    Num_Waves()
+     #   Num_Waves(path_head, args)
     Heat_Mapper(args.norm, args.avg)
