@@ -6,18 +6,19 @@ import matplotlib.colors as mcolors
 from difflib import SequenceMatcher
 import glob
 import csv
-from step1 import states, mice, similar, divide, add, Heat_Mapper
+from step1 import states, mice, similar, divide, add, Heat_Mapper, check_mice
 import os
 import argparse
 from scipy.stats import gaussian_kde
 import seaborn as sns
 grid_size = 128
 
-def Velocity_Violin(path_head, args):
+def Velocity_Violin(args):
     print(f"Graphing velocity violins...")
     v_list = np.empty(grid_size**2)
-
-    csv_files = glob.glob(f'{args.out}\\*velocity.csv')
+    flagType = 'velocity.csv'
+    csv_files = glob.glob(f'{args.out}\\*{flagType}')
+    check_mice(csv_files, flagType)
     for index, file in enumerate(csv_files):
         df = pd.read_csv(file, header=None)
         file_name = os.path.splitext(os.path.basename(file))[0].replace('velocity','')
@@ -38,45 +39,50 @@ def Velocity_Violin(path_head, args):
         print(v_list)
         plt.savefig(os.path.join(args.out, f'{file_name}_violin.png'))
 
-def Normalize(path_head, args):
+def Normalize(args):
     print("Normalizing CSVs...")
-    csv_files = glob.glob(f'{args.out}\\*velocity_N.csv')
-    j = 0
-    print(args.n)
+    flagType = 'velocity_N.csv'
+    csv_files = glob.glob(f'{args.out}\\*{flagType}')
+    check_mice(csv_files, flagType)
+    mouse_n = 0
     sums = [0] * int(args.n)
     for i, file in enumerate(csv_files):
         df = pd.read_csv(file, header=None)
         file_name = os.path.splitext(os.path.basename(file))[0]
-        sums[j] += df.sum().sum(axis=0)
+        sums[mouse_n] += df.sum().sum(axis=0)
         if i + 1 < len(csv_files):
             print("HELLO")
             if similar(file_name, os.path.splitext(os.path.basename(csv_files[i+1]))[0]):
                 print("HELLOOOOOOO")
-                j += 1
+                mouse_n += 1
     denominator = [x / (128**2 * 3) for x in sums]
-    j = 0
+    mouse_n = 0
     for i, file in enumerate(csv_files):
         df = pd.read_csv(file, header=None)
         file_name = os.path.splitext(os.path.basename(file))[0]
-        df = df.div(denominator[j])
+        df = df.div(denominator[mouse_n])
         df.to_csv(Path(file), index = False, header = False)
         if i + 1 < len(csv_files) and not similar(file_name, os.path.splitext(os.path.basename(csv_files[i+1]))[0]):
             j += 1
 
-def Average_CSVs(path_head, args):
+def Average_CSVs(args):
     grid_average = [[0 for _ in range(grid_size)] for _ in range(grid_size)]
     averages_nrem, averages_rem, averages_wake = pd.DataFrame(grid_average), pd.DataFrame(grid_average), pd.DataFrame(grid_average)
-    norm_path = f'{args.out}\\*velocity_N.csv'
-    avg_path = f'{args.out}\\*velocity.csv'
+    flagTypeNorm = 'velocity_N.csv'
+    norm_path = f'{args.out}\\*{flagTypeNorm}'
+    flagTypeAvg = 'velocity.csv'
+    avg_path = f'{args.out}\\*{flagTypeAvg}'
     #args.norm
     if args.norm:
         print("Producing average norm CSVs...")
+        check_mice(glob.glob(norm_path), flagTypeNorm)
         nrem_csv_files = [x for x in glob.glob(norm_path) if 'NREM' in x]
         rem_csv_files = [x for x in glob.glob(norm_path) if 'REM' in x]
         wake_csv_files = [x for x in glob.glob(norm_path) if 'WAKE' in x]
     #if not norm
     else:
         print("Producing average CSVs...")
+        check_mice(glob.glob(avg_path), flagTypeNorm)
         nrem_csv_files = [x for x in glob.glob(avg_path) if 'NREM' in x]
         rem_csv_files = [x for x in glob.glob(avg_path) if 'REM' in x]
         wake_csv_files = [x for x in glob.glob(avg_path) if 'WAKE' in x]
@@ -101,7 +107,9 @@ def Avg_Planarity(path_head, args):
         for j in range(3):
             table[i].append(0)
     j=0
-    csv_files = glob.glob(f'{args.out}\\*velocity.csv')
+    flagType = 'velocity.csv'
+    csv_files = glob.glob(f'{args.out}\\*{flagType}')
+    check_mice(csv_files, flagType)
     for i, file in enumerate(csv_files):
         file_name = os.path.splitext(os.path.basename(file))[0].replace('_velocity','')
         df = pd.read_csv(Path(f"{path_head}\\stage05_wave_characterization\\label_planar\\wavefronts_label_planar.csv"), usecols=['planarity'])
@@ -115,6 +123,7 @@ def Avg_Planarity(path_head, args):
         elif 'REM' in str(file_name):
             print(f"rem {j}")
             table[j][2] = mean
+            
         print(f"first: {os.path.splitext(os.path.basename(csv_files[i+1]))[0]}")
         print(f"second: {file_name}")
         if i + 1 < len(csv_files) and not similar(file_name, os.path.splitext(os.path.basename(csv_files[i+1]))[0]):
@@ -164,7 +173,9 @@ def Num_Waves(path_head, args):
         table.append([])
         for j in range(3):
             table[i].append(0)
-    csv_files = glob.glob(f'{args.out}\\*velocity.csv')
+    flagType = 'velocity.csv'
+    csv_files = glob.glob(f'{args.out}\\*{flagType}')
+    check_mice(csv_files, flagType)
     for i, file in enumerate(csv_files):
         file_name = os.path.splitext(os.path.basename(file))[0].replace('_velocity','')
         df = pd.read_csv(Path(f"{path_head}\\stage05_channel-wave_characterization\\velocity_local\\wavefronts_velocity_local.csv"), usecols=['wavefronts_id'])
@@ -227,13 +238,13 @@ def Num_Waves(path_head, args):
 def run(data_path, filename, args):
     path_head = os.path.join(data_path, filename)
     if args.v:
-        Velocity_Violin(path_head, args)
+        Velocity_Violin(args)
     if args.norm:
-        Normalize(path_head, args)
+        Normalize(args)
     if args.avg:
-        Average_CSVs(path_head, args)
-    #if args.p:
-     #   Avg_Planarity(path_head, args)
-    #if args.num:
-     #   Num_Waves(path_head, args)
-    Heat_Mapper(args.norm, args.avg)
+        Average_CSVs(args)
+    if args.p:
+       Avg_Planarity(path_head, args)
+    if args.num:
+       Num_Waves(path_head, args)
+    Heat_Mapper(filename, args, args.norm, args.avg)

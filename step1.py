@@ -29,20 +29,32 @@ def divide(df, size):
                 if size != 0 and not np.isnan(col):
                     df.at[index,col_index] /= size
     return df
-def similar(a , b):
+def similar(curr, next):
     for state in states:
-        if state in str(a):
-            a = a.replace(state, '')
-        if state in str(b):
-            b = b.replace(state, '')
-    s = SequenceMatcher(None, a, b)
-    mice.append(a)
+        if state in str(curr):
+            curr = curr.replace(state, '')
+        if state in str(next):
+            next = next.replace(state, '')
+    s = SequenceMatcher(None, curr, next)
+    mice.append(curr)
     if s.ratio() == 1:
         print("same")
         return True
     else:
         print("different")
         return False
+def check_mice(csv_files, flagType):
+    for file in csv_files:
+        file_name = os.path.splitext(os.path.basename(file))[0].replace(flagType,'')
+        with open('.\\input.txt') as f:
+            for line in f:
+                line = line.split(' ')
+                for item in line:
+                    item = item.split(':')
+            print(item)
+            if file_name not in item:
+                print(file_name)
+                csv_files.remove(file)
 def Polar_Histogram(path_head, filename, wave_ids, args):
     # Master list containing every x and y coord based on parameter/argument
     all_directionY = []

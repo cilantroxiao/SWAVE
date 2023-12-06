@@ -68,6 +68,7 @@ with open(input_path, 'r') as f:
         #     break
         args = parser.parse_args(line.split())
         if "CUMULATIVE" in line.strip():
+            
             step2.run(data_path, filename, args)
             break
         
