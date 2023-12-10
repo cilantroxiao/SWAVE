@@ -48,6 +48,8 @@ for entry in args.filename_wave_ids:
         wave_ids = parse_wave_ids(wave_ids_input)
         data.append({'filename': filename, 'wave_ids': wave_ids})
 
+print("data:", data)
+
 #Loop and extract data to normalize and calculate average values
 for entry in data:
     filename = entry['filename']

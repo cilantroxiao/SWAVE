@@ -7,7 +7,6 @@ from difflib import SequenceMatcher
 import glob
 import csv
 import os
-import argparse
 import warnings
 grid_size = 128
 states = ['WAKE', 'NREM', 'REM']
@@ -55,6 +54,7 @@ def check_mice(csv_files, flagType):
             if file_name not in item:
                 print(file_name)
                 csv_files.remove(file)
+
 def Polar_Histogram(path_head, filename, wave_ids, args):
     # Master list containing every x and y coord based on parameter/argument
     all_directionY = []

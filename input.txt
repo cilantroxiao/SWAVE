@@ -1,2 +1,3 @@
---f SLEEP_L1_NREM_54:1-30,32 --out .\\output --norm
+--f SLEEP_L1_NREM_54 --out .\\output --norm
+--f SLEEP_L1_REM_54 --out .\\output --norm
 --f CUMULATIVE --norm --out .\\output --avg --v --n 1 --p --num 
