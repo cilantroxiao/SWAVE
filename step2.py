@@ -13,12 +13,11 @@ from scipy.stats import gaussian_kde
 import seaborn as sns
 grid_size = 128
 
-def Velocity_Violin(args):
+def Velocity_Violin(currdir):
     print(f"Graphing velocity violins...")
     v_list = np.empty(grid_size**2)
     flagType = 'velocity.csv'
-    csv_files = glob.glob(f'{args.out}\\*{flagType}')
-    check_mice(csv_files, flagType)
+    csv_files = glob.glob(f'{currdir}\\*{flagType}')
     for index, file in enumerate(csv_files):
         df = pd.read_csv(file, header=None)
         file_name = os.path.splitext(os.path.basename(file))[0].replace('velocity','')
@@ -37,24 +36,28 @@ def Velocity_Violin(args):
         fig.suptitle(f"{file_name} Velocity Density Distribution", fontsize=15)
         ax.set_ylabel("log10 channel velocity [mm/s]")
         print(v_list)
-        plt.savefig(os.path.join(args.out, f'{file_name}_violin.png'))
+        plt.savefig(os.path.join(currdir, f'{file_name}_violin.png'))
 
-def Normalize(args):
+def Normalize(args, currdir):
     print("Normalizing CSVs...")
     flagType = 'velocity_N.csv'
-    csv_files = glob.glob(f'{args.out}\\*{flagType}')
-    check_mice(csv_files, flagType)
+    csv_files = glob.glob(f'{currdir}\\*{flagType}')
     mouse_n = 0
     sums = [0] * int(args.n)
     for i, file in enumerate(csv_files):
         df = pd.read_csv(file, header=None)
         file_name = os.path.splitext(os.path.basename(file))[0]
+        print(sums)
         sums[mouse_n] += df.sum().sum(axis=0)
         if i + 1 < len(csv_files):
             print("HELLO")
-            if similar(file_name, os.path.splitext(os.path.basename(csv_files[i+1]))[0]):
+            print(file_name)
+            print(os.path.splitext(os.path.basename(csv_files[i+1]))[0])
+            if not similar(file_name, os.path.splitext(os.path.basename(csv_files[i+1]))[0]):
                 print("HELLOOOOOOO")
+                print(mouse_n)
                 mouse_n += 1
+                print(mouse_n)
     denominator = [x / (128**2 * 3) for x in sums]
     mouse_n = 0
     for i, file in enumerate(csv_files):
@@ -65,24 +68,24 @@ def Normalize(args):
         if i + 1 < len(csv_files) and not similar(file_name, os.path.splitext(os.path.basename(csv_files[i+1]))[0]):
             j += 1
 
-def Average_CSVs(args):
+def Average_CSVs(args, currdir):
     grid_average = [[0 for _ in range(grid_size)] for _ in range(grid_size)]
     averages_nrem, averages_rem, averages_wake = pd.DataFrame(grid_average), pd.DataFrame(grid_average), pd.DataFrame(grid_average)
     flagTypeNorm = 'velocity_N.csv'
-    norm_path = f'{args.out}\\*{flagTypeNorm}'
+    norm_path = f'{currdir}\\*{flagTypeNorm}'
     flagTypeAvg = 'velocity.csv'
-    avg_path = f'{args.out}\\*{flagTypeAvg}'
+    avg_path = f'{currdir}\\*{flagTypeAvg}'
     #args.norm
     if args.norm:
         print("Producing average norm CSVs...")
-        check_mice(glob.glob(norm_path), flagTypeNorm)
+        #check_mice(glob.glob(norm_path), flagTypeNorm)
         nrem_csv_files = [x for x in glob.glob(norm_path) if 'NREM' in x]
         rem_csv_files = [x for x in glob.glob(norm_path) if 'REM' in x]
         wake_csv_files = [x for x in glob.glob(norm_path) if 'WAKE' in x]
     #if not norm
     else:
         print("Producing average CSVs...")
-        check_mice(glob.glob(avg_path), flagTypeNorm)
+        #check_mice(glob.glob(avg_path), flagTypeNorm)
         nrem_csv_files = [x for x in glob.glob(avg_path) if 'NREM' in x]
         rem_csv_files = [x for x in glob.glob(avg_path) if 'REM' in x]
         wake_csv_files = [x for x in glob.glob(avg_path) if 'WAKE' in x]
@@ -99,7 +102,7 @@ def Average_CSVs(args):
     divide(averages_rem, len(rem_csv_files)).to_csv(Path(rem_avg_path), index = False, header = False, mode='w+')
     divide(averages_wake, len(wake_csv_files)).to_csv(Path(wake_avg_path), index = False, header = False, mode='w+')
 
-def Avg_Planarity(path_head, args):
+def Avg_Planarity(path_head, args, currdir):
     print(f"Graphing planarity...")
     table = []
     for i in range(int(args.n)):
@@ -108,8 +111,8 @@ def Avg_Planarity(path_head, args):
             table[i].append(0)
     j=0
     flagType = 'velocity.csv'
-    csv_files = glob.glob(f'{args.out}\\*{flagType}')
-    check_mice(csv_files, flagType)
+    csv_files = glob.glob(f'{currdir}\\*{flagType}')
+    #check_mice(csv_files, flagType)
     for i, file in enumerate(csv_files):
         file_name = os.path.splitext(os.path.basename(file))[0].replace('_velocity','')
         df = pd.read_csv(Path(f"{path_head}\\stage05_wave_characterization\\label_planar\\wavefronts_label_planar.csv"), usecols=['planarity'])
@@ -123,11 +126,11 @@ def Avg_Planarity(path_head, args):
         elif 'REM' in str(file_name):
             print(f"rem {j}")
             table[j][2] = mean
-            
-        # print(f"first: {os.path.splitext(os.path.basename(csv_files[i+1]))[0]}")
-        # print(f"second: {file_name}")
+        print(csv_files)
         if i + 1 < len(csv_files) and not similar(file_name, os.path.splitext(os.path.basename(csv_files[i+1]))[0]):
             print(j)
+            mice.append(file_name)
+            print(mice)
             j += 1
 
     df = pd.DataFrame({'States': states})
@@ -141,7 +144,7 @@ def Avg_Planarity(path_head, args):
         df.insert(index, mice_unique[index], table[index], True)
     state = df.pop('States')
     df.insert(0, state.name, state)
-    df.to_csv(Path(f"{args.out}\\avg_planarity.csv"), index = False, mode='w+')
+    df.to_csv(Path(f"{currdir}\\avg_planarity.csv"), index = False, mode='w+')
 
     #individual bar graphs
     for mouse in mice_unique:
@@ -153,7 +156,7 @@ def Avg_Planarity(path_head, args):
         bgraph[2].set_color('green')
         plt.ylabel('average planarity')
         plt.title(mouse)
-        plt.savefig(f"{args.out}\\{mouse}_avg_planarity.png")
+        plt.savefig(f"{currdir}\\{mouse}_avg_planarity.png")
     plt.clf()
 
     #line plot
@@ -165,10 +168,10 @@ def Avg_Planarity(path_head, args):
     plt.legend(loc='upper left', bbox_to_anchor=(1.05, 1), fontsize='small')
     plt.title('Average Planarity Across States Comparison')
     plt.tight_layout()
-    plt.savefig(f'{args.out}\\avg_planarity_comparison.png')
+    plt.savefig(f'{currdir}\\avg_planarity_comparison.png')
     plt.clf()
 
-def Num_Waves(path_head, args):
+def Num_Waves(path_head, args, currdir):
     #0 -> Wake, 1 -> NREM, 2 -> REM
     print(f"Graphing number of waves...")
     table = []
@@ -177,8 +180,8 @@ def Num_Waves(path_head, args):
         for j in range(3):
             table[i].append(0)
     flagType = 'velocity.csv'
-    csv_files = glob.glob(f'{args.out}\\*{flagType}')
-    check_mice(csv_files, flagType)
+    csv_files = glob.glob(f'{currdir}\\*{flagType}')
+    #check_mice(csv_files, flagType)
     for i, file in enumerate(csv_files):
         file_name = os.path.splitext(os.path.basename(file))[0].replace('_velocity','')
         df = pd.read_csv(Path(f"{path_head}\\stage05_channel-wave_characterization\\velocity_local\\wavefronts_velocity_local.csv"), usecols=['wavefronts_id'])
@@ -199,7 +202,7 @@ def Num_Waves(path_head, args):
         df.insert(index, mice_unique[index], table[index], True)
     state = df.pop('States')
     df.insert(0, state.name, state)
-    df.to_csv(Path(f"{args.out}\\number_of_waves.csv"), index = False, mode='w+')
+    df.to_csv(Path(f"{currdir}\\number_of_waves.csv"), index = False, mode='w+')
 
     #individual bar graphs
     for mouse in mice_unique:
@@ -211,7 +214,7 @@ def Num_Waves(path_head, args):
         bgraph[2].set_color('green')
         plt.ylabel('number of waves')
         plt.title(mouse)
-        plt.savefig(f"{args.out}\\{mouse}_number_of_waves.pdf")
+        plt.savefig(f"{currdir}\\{mouse}_number_of_waves.pdf")
     plt.clf()
 
     #line plot
@@ -221,7 +224,7 @@ def Num_Waves(path_head, args):
         plt.plot(y, x, label=mouse, marker='o', linewidth=2)
     plt.legend()
     plt.title('Waves Across States Comparison')
-    plt.savefig(f"{args.out}\\number_of_waves_comparison.pdf")
+    plt.savefig(f"{currdir}\\number_of_waves_comparison.pdf")
     plt.clf()
 
     #total bar graph
@@ -235,27 +238,10 @@ def Num_Waves(path_head, args):
     bgraph[2].set_color('green')
     plt.title('Total Number of Waves')
     plt.xlabel('number of waves')
-    plt.savefig(f"{args.out}\\total_number_of_waves.pdf")
+    plt.savefig(f"{currdir}\\total_number_of_waves.pdf")
     plt.clf()
 
-# def parse_waves_helper(path_head, args):
-#     wave_ids = list()
-#     if ':' in args.f: #if waves/ranges specified
-#         filename, wave_ids_input = args.f.split(':')
-#         for part in wave_ids_input.split(','):
-#             if '-' in part:
-#                 start, end = part.split('-')[0], part.split('-')[1]
-#                 wave_ids.extend(range(int(start), int(end) + 1))
-#             else:
-#                 wave_ids.append(int(part))
-#     else: #all waves
-#         filename = args.f
-#         df = pd.read_csv(Path(f"{path_head}\\stage05_channel-wave_characterization\\direction_local\\wavefronts_direction_local.csv"))
-#         last_wave_id = df['wavefronts_id'].max()
-#         wave_ids.extend(range(1, last_wave_id)) # Set wave_ids_input as a range from 1 to last_wave_id 
-#     return filename, wave_ids
-
-def avg_polar(data_path, args, data):
+def Avg_Polar(data_path, args, data, currdir):
     # Master list containing every x and y coord based on parameter/argument
     all_directionY = []
     all_directionX = []
@@ -264,13 +250,14 @@ def avg_polar(data_path, args, data):
     avg_x_normalized = []
     avg_y_normalized = []
 
-    print("data:", data)
+    all_files = [entry['filename'] for entry in data]
+    print(f"Graphing polar histogram for entries: {all_files}...")
     
     for entry in data:
         filename = entry['filename']
         wave_ids = entry['wave_ids']
         df = pd.read_csv(Path(f"{data_path}{filename}\\stage05_channel-wave_characterization\\direction_local\\wavefronts_direction_local.csv"))
-    
+
         for wave_id in wave_ids:
             group = df[df['wavefronts_id'] == wave_id]
 
@@ -322,22 +309,22 @@ def avg_polar(data_path, args, data):
     ax1.plot([0, weighted_average_angle1], [0, ax1.get_ylim()[1]], color='black', linewidth=2)
 
     setOutputName = "avg_polar"
-    print(f"{args.out}\\{setOutputName}.png")
-    fig.suptitle(f"avg for {args.n} mice", fontsize=16)
-    fig.savefig(os.path.join(args.out, f'{setOutputName}.png'))
+    print(f"{currdir}\\{setOutputName}.png")
+    fig.suptitle(f"avg for {args.n} {'mouse' if args.n == '1' else 'mice'}", fontsize=16)
+    fig.savefig(os.path.join(currdir, f'{setOutputName}.png'))
     plt.close()
 
-def run(data_path, filename, args, data):
+def run(data_path, filename, args, data, currdir):
     path_head = os.path.join(data_path, filename)
-    avg_polar(data_path, args, data)
+    Avg_Polar(data_path, args, data, currdir)
     if args.v:
-        Velocity_Violin(args)
+        Velocity_Violin(currdir)
     if args.norm:
-        Normalize(args)
+        Normalize(args, currdir)
     if args.avg:
-        Average_CSVs(args)
-    # if args.p:
-    #    Avg_Planarity(path_head, args)
-    # if args.num:
-    #    Num_Waves(path_head, args)
-    Heat_Mapper(filename, args, args.norm, args.avg)
+        Average_CSVs(args, currdir)
+    if args.p:
+        Avg_Planarity(path_head, args, currdir)
+    if args.num:
+        Num_Waves(path_head, args, currdir)
+    Heat_Mapper(filename, args, args.norm, args.avg, currdir)

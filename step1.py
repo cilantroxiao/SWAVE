@@ -37,25 +37,40 @@ def similar(curr, next):
     s = SequenceMatcher(None, curr, next)
     mice.append(curr)
     if s.ratio() == 1:
-        print("same")
         return True
     else:
-        print("different")
         return False
 def check_mice(csv_files, flagType):
-    for file in csv_files:
-        file_name = os.path.splitext(os.path.basename(file))[0].replace(flagType,'')
+    for file in csv_files[:]:  # Using a copy of the list to avoid modifying it during iteration
+        print(file)
+        file_name = os.path.splitext(os.path.basename(file))[0].replace(flagType, '')
+        file_name = file_name.replace('_velocity', '')
+        print(file_name)
+        found = False
         with open('.\\input.txt') as f:
             for line in f:
                 line = line.split(' ')
                 for item in line:
-                    item = item.split(':')
-            print(item)
-            if file_name not in item:
-                print(file_name)
-                csv_files.remove(file)
+                    if '_' in item:
+                        if ':' in item:
+                            name, wave = item.split(':')
+                            if file_name == name:
+                                found = True
+                                break
+                            else:
+                                found = False
+                        else:
+                            name = item
+                            if file_name == name:
+                                found = True
+                                break
+                            else:
+                                found = False
+        if not found:
+            print("This mouse is not in the input.txt file:", file_name)
+            csv_files.remove(file)
 
-def Polar_Histogram(path_head, filename, wave_ids, args):
+def Polar_Histogram(path_head, filename, wave_ids, args, currdir):
     # Master list containing every x and y coord based on parameter/argument
     all_directionY = []
     all_directionX = []
@@ -116,11 +131,11 @@ def Polar_Histogram(path_head, filename, wave_ids, args):
     ax.plot([0, weighted_average_angle], [0, ax.get_ylim()[1]], color='red', linewidth=2)
     ax1.plot([0, weighted_average_angle1], [0, ax1.get_ylim()[1]], color='black', linewidth=2)
 
-    print(f"{args.out}\\{filename}_polar.png")
-    fig.savefig(os.path.join(args.out, f'{filename}_polar.png'))
+    print(f'{currdir}\\{filename}_polar.png')
+    fig.savefig(os.path.join(currdir, f'{filename}_polar.png'))
     plt.close()
 
-def Individual_CSVs(path_head, filename, wave_ids, args):
+def Individual_CSVs(path_head, filename, wave_ids, args, currdir):
     filename = filename.strip()
     df = pd.read_csv(Path(f"{path_head}\\stage05_channel-wave_characterization\\channel-wise_measures.csv"))
     print(f"Producing {filename} velocities CSV...")
@@ -135,7 +150,7 @@ def Individual_CSVs(path_head, filename, wave_ids, args):
             channel_wave_count[y][x] += 1
     #if norm flagged
     if args.norm: 
-        with open(Path(f"{args.out}\\{filename}_velocity_N.csv"), 'w', newline='') as csvfile:
+        with open(Path(f"{currdir}\\{filename}_velocity_N.csv"), 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerows(grid)
     #if norm not flagged
@@ -144,27 +159,27 @@ def Individual_CSVs(path_head, filename, wave_ids, args):
             for col_index, col in enumerate(row):
                 if channel_wave_count[index][col_index] != 0:
                     grid[index][col_index] /= channel_wave_count[index][col_index]
-        with open(Path(f"{args.out}\\{filename}_velocity.csv"), 'w', newline='') as csvfile:
+        with open(Path(f"{currdir}\\{filename}_velocity.csv"), 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerows(grid)
     print(f"{filename} done")
 
-def Heat_Mapper(filename, args, norm=False, avg=False):
+def Heat_Mapper(filename, args, currdir, norm=False, avg=False):
     if norm and avg:
         return
     if norm:
         print(f"Producing normalized heatmaps...")
-        csv_files = glob.glob(f'{args.out}\\*velocity_N.csv')
+        csv_files = glob.glob(f'{currdir}\\*velocity_N.csv')
         scale_min = 0
         scale_max = 2
     elif avg:
         print(f"Producing average heatmaps...")
-        csv_files = glob.glob(f'{args.out}\\*v-avg*.csv')
+        csv_files = glob.glob(f'{currdir}\\*v-avg*.csv')
         scale_min = 0
         scale_max = 2
     else:
         print(f"Producing velocity heatmaps...")
-        csv_files = glob.glob(f'{args.out}\\*velocity.csv')
+        csv_files = glob.glob(f'{currdir}\\*velocity.csv')
         scale_min = 43518.26345849037
         scale_max = 2272431268.2241783
     
@@ -193,11 +208,11 @@ def Heat_Mapper(filename, args, norm=False, avg=False):
         fig.colorbar(heatmap)
         ax.set_aspect('equal')
         ax.set_title(filename)
-        plt.savefig(os.path.join(args.out, f'{filename}_heatmap.png'))
+        plt.savefig(os.path.join(currdir, f'{filename}_heatmap.png'))
         plt.close()
 
-def run(data_path, filename, wave_ids, args):
+def run(data_path, filename, wave_ids, args, currdir):
     path_head = os.path.join(data_path, filename)
-    Polar_Histogram(path_head, filename, wave_ids, args)
-    Individual_CSVs(path_head, filename, wave_ids, args)
-    Heat_Mapper(filename, args, False, False)
+    Polar_Histogram(path_head, filename, wave_ids, args, currdir)
+    Individual_CSVs(path_head, filename, wave_ids, args, currdir)
+    Heat_Mapper(filename, args, currdir, False, False)
