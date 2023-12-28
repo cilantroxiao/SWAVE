@@ -35,7 +35,8 @@ def similar(curr, next):
         if state in str(next):
             next = next.replace(state, '')
     s = SequenceMatcher(None, curr, next)
-    mice.append(curr)
+    #if curr not in mice:
+    #    mice.append(curr)
     if s.ratio() == 1:
         return True
     else:
@@ -70,7 +71,7 @@ def check_mice(csv_files, flagType):
             print("This mouse is not in the input.txt file:", file_name)
             csv_files.remove(file)
 
-def Polar_Histogram(path_head, filename, wave_ids, args, currdir):
+def Polar_Histogram(path_head, filename, wave_ids, currdir):
     # Master list containing every x and y coord based on parameter/argument
     all_directionY = []
     all_directionX = []
@@ -116,8 +117,8 @@ def Polar_Histogram(path_head, filename, wave_ids, args, currdir):
                                         np.average(directionX_normalized))
     weighted_average_angle1 = np.arctan2(np.average(avg_y_normalized), 
                                         np.average(avg_x_normalized))
-    print('normalized by vector length', weighted_average_angle)
-    print('normalized by number of vectors within each wave', weighted_average_angle1)
+    #print('normalized by vector length', weighted_average_angle)
+    #print('normalized by number of vectors within each wave', weighted_average_angle1)
 
     # Create a polar histogram each method
     fig, (ax, ax1) = plt.subplots(1,2, subplot_kw={'projection': 'polar'})
@@ -131,11 +132,11 @@ def Polar_Histogram(path_head, filename, wave_ids, args, currdir):
     ax.plot([0, weighted_average_angle], [0, ax.get_ylim()[1]], color='red', linewidth=2)
     ax1.plot([0, weighted_average_angle1], [0, ax1.get_ylim()[1]], color='black', linewidth=2)
 
-    print(f'{currdir}\\{filename}_polar.png')
+    #print(f'{currdir}\\{filename}_polar.png')
     fig.savefig(os.path.join(currdir, f'{filename}_polar.png'))
     plt.close()
 
-def Individual_CSVs(path_head, filename, wave_ids, args, currdir):
+def Velocity_CSVs(path_head, filename, wave_ids, args, currdir):
     filename = filename.strip()
     df = pd.read_csv(Path(f"{path_head}\\stage05_channel-wave_characterization\\channel-wise_measures.csv"))
     print(f"Producing {filename} velocities CSV...")
@@ -164,55 +165,27 @@ def Individual_CSVs(path_head, filename, wave_ids, args, currdir):
             writer.writerows(grid)
     print(f"{filename} done")
 
-def Heat_Mapper(filename, args, currdir, norm=False, avg=False):
-    if norm and avg:
-        return
-    if norm:
-        print(f"Producing normalized heatmaps...")
-        csv_files = glob.glob(f'{currdir}\\*velocity_N.csv')
-        scale_min = 0
-        scale_max = 2
-    elif avg:
-        print(f"Producing average heatmaps...")
-        csv_files = glob.glob(f'{currdir}\\*v-avg*.csv')
-        scale_min = 0
-        scale_max = 2
-    else:
-        print(f"Producing velocity heatmaps...")
-        csv_files = glob.glob(f'{currdir}\\*velocity.csv')
-        scale_min = 43518.26345849037
-        scale_max = 2272431268.2241783
-    
-    for file in csv_files:
-        df = pd.read_csv(file, header=None)
-        file_name = os.path.basename(file)
-        num_rows = len(df)
-        num_columns = len(df.columns)
+def Planarity(path_head, filename, wave_ids, currdir):
+    print("Calculating planarity...")
+    df = pd.read_csv(Path(f"{path_head}\\stage05_wave_characterization\\label_planar\\wavefronts_label_planar.csv"))
+    filtered_df = df[df['wavefronts_id'].isin(wave_ids)]
+    mean = filtered_df['planarity'].mean()
+    with open(Path(f"{currdir}\\{filename}_planarity.csv"), 'w') as f:
+        f.write(str(mean))
 
-        x = np.array([i for i in range(num_columns)])
-        y = np.array([i for i in range(num_rows)])
-        row_shape, col_shape = df.shape
-        heat_data = np.zeros((row_shape, col_shape))
-        #retrieve data from csv
-        for row_index, row in df.iterrows():
-            for col_index, col in enumerate(row):
-                heat_data[row_index, col_index] = float(row[col_index])
-
-        fig, ax = plt.subplots()
-
-        cmap_nonzero = plt.get_cmap('rainbow')
-        cmap_custom = mcolors.ListedColormap(['white'] + [cmap_nonzero(i) for i in range(1, cmap_nonzero.N)])
-        norm = mcolors.Normalize(vmin= scale_min, vmax=scale_max)
-        heatmap = ax.imshow(heat_data, cmap=cmap_custom, origin='lower', extent=[x.min(), x.max(), y.min(), y.max()], norm=norm)
-        ax.set_frame_on(False)
-        fig.colorbar(heatmap)
-        ax.set_aspect('equal')
-        ax.set_title(filename)
-        plt.savefig(os.path.join(currdir, f'{filename}_heatmap.png'))
-        plt.close()
+def Num_Waves(path_head, filename, wave_ids, currdir):
+    print("Retrieving number of waves...")
+    df = pd.read_csv(Path(f"{path_head}\\stage05_channel-wave_characterization\\velocity_local\\wavefronts_velocity_local.csv"), usecols=['wavefronts_id'])
+    index = df.tail(1).index.item() #grabs last index's value in file
+    num = df.at[index, 'wavefronts_id']
+    if num != len(wave_ids):
+        num = len(wave_ids)
+    with open(Path(f"{currdir}\\{filename}_numwaves.csv"), 'w') as f:
+        f.write(str(num))
 
 def run(data_path, filename, wave_ids, args, currdir):
     path_head = os.path.join(data_path, filename)
-    Polar_Histogram(path_head, filename, wave_ids, args, currdir)
-    Individual_CSVs(path_head, filename, wave_ids, args, currdir)
-    Heat_Mapper(filename, args, currdir, False, False)
+    Polar_Histogram(path_head, filename, wave_ids, currdir)
+    Velocity_CSVs(path_head, filename, wave_ids, args, currdir)
+    Planarity(path_head, filename, wave_ids, currdir)
+    Num_Waves(path_head, filename, wave_ids, currdir)
