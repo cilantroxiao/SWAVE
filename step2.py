@@ -6,32 +6,33 @@ import matplotlib.colors as mcolors
 from difflib import SequenceMatcher
 import glob
 import csv
-from step1 import states, mice, similar, divide, add, Heat_Mapper, check_mice
+from step1 import states, mice, similar, divide, add, check_mice
 import os
 from scipy.stats import gaussian_kde
 import seaborn as sns
 grid_size = 128
 
 def Velocity_Violin(currdir, norm=False, avg=False):
-    if norm and avg:
-        print("No velocity violins produced. Please choose either norm or avg.")
-        return
+    #if norm and avg:
+    #    print("No velocity violins produced. Please choose either norm or avg.")
+    #    return
     if norm:
         print(f"Graphing normalized velocity violins...")
+        flagType = 'velocity_N.csv'
         csv_files = glob.glob(f'{currdir}\\*velocity_N.csv')
     elif avg:
         print(f"Graphing averaged velocity violins...")
+        flagType = 'v-avg.csv'
         csv_files = glob.glob(f'{currdir}\\*v-avg*.csv')
     else:
         print(f"Graphing velocity violins...")
+        flagType = 'velocity.csv'
         csv_files = glob.glob(f'{currdir}\\*velocity.csv')
         
     v_list = np.empty(grid_size**2)
-    flagType = 'velocity.csv'
-    csv_files = glob.glob(f'{currdir}\\*{flagType}')
     for index, file in enumerate(csv_files):
         df = pd.read_csv(file, header=None)
-        file_name = os.path.splitext(os.path.basename(file))[0].replace('velocity','')
+        file_name = os.path.splitext(os.path.basename(file))[0].replace(flagType,'')
         i = 0
         for row_index, row in df.iterrows():
             for col_index, col in enumerate(row):
@@ -104,75 +105,6 @@ def Average_CSVs(args, currdir):
     divide(averages_nrem, len(nrem_csv_files)).to_csv(Path(nrem_avg_path), index = False, header = False, mode='w+')
     divide(averages_rem, len(rem_csv_files)).to_csv(Path(rem_avg_path), index = False, header = False, mode='w+')
     divide(averages_wake, len(wake_csv_files)).to_csv(Path(wake_avg_path), index = False, header = False, mode='w+')
-
-def Num_Waves_OG( args, currdir):
-    #0 -> Wake, 1 -> NREM, 2 -> REM
-    print(f"Graphing number of waves...")
-    table = []
-    for i in range(int(args.n)):
-        table.append([])
-        for j in range(3):
-            table[i].append(0)
-    flagType = 'velocity.csv'
-    csv_files = glob.glob(f'{currdir}\\*{flagType}')
-    for i, file in enumerate(csv_files):
-        file_name = os.path.splitext(os.path.basename(file))[0].replace('_velocity','')
-        df = pd.read_csv(Path(f"{path_head}\\stage05_channel-wave_characterization\\velocity_local\\wavefronts_velocity_local.csv"), usecols=['wavefronts_id'])
-        index = df.tail(1).index.item() #grabs last index's value in file
-        num = df.at[index, 'wavefronts_id']
-        if 'WAKE' in str(file_name):
-            table[j][0] = num
-        elif 'NREM' in str(file_name):
-            table[j][1] = num
-        elif 'REM' in str(file_name):
-            table[j][2] = num
-        if i + 1 < len(csv_files) and not similar(file_name, os.path.splitext(os.path.basename(csv_files[i+1]))[0]):
-            j += 1
-    df = pd.DataFrame({'States': states})
-    mice_unique = []
-    [mice_unique.append(item) for item in mice if item not in mice_unique]
-    for index, column in enumerate(table):
-        df.insert(index, mice_unique[index], table[index], True)
-    state = df.pop('States')
-    df.insert(0, state.name, state)
-    df.to_csv(Path(f"{currdir}\\number_of_waves.csv"), index = False, mode='w+')
-
-    #individual bar graphs
-    for mouse in mice_unique:
-        y = ['WAKE', 'NREM', 'REM']
-        x = df[mouse]
-        bgraph = plt.bar(y,x)
-        bgraph[0].set_color('red')
-        bgraph[1].set_color('blue')
-        bgraph[2].set_color('green')
-        plt.ylabel('number of waves')
-        plt.title(mouse)
-        plt.savefig(f"{currdir}\\{mouse}_number_of_waves.png")
-    plt.clf()
-
-    #line plot
-    for mouse in mice_unique:
-        y = ['WAKE', 'NREM', 'REM']
-        x = df[mouse]
-        plt.plot(y, x, label=mouse, marker='o', linewidth=2)
-    plt.legend()
-    plt.title('Waves Across States Comparison')
-    plt.savefig(f"{currdir}\\number_of_waves_comparison.png")
-    plt.clf()
-
-    #total bar graph
-    df.pop('States')
-    df_total = df.sum(axis = 1) #sum up rows of table
-    y = ['WAKE', 'NREM', 'REM']
-    x = df_total
-    bgraph= plt.bar(y,x)
-    bgraph[0].set_color('red')
-    bgraph[1].set_color('blue')
-    bgraph[2].set_color('green')
-    plt.title('Total Number of Waves')
-    plt.xlabel('number of waves')
-    plt.savefig(f"{currdir}\\total_number_of_waves.png")
-    plt.clf()
 
 def Num_Waves_Comp(currdir):
     print(f"Graphing number of waves...")
@@ -355,9 +287,9 @@ def Planarity_Comp(currdir):
     plt.clf()
 
 def Heat_Mapper(currdir, norm=False, avg=False):
-    if norm and avg:
-        print("No heatmaps produced. Please choose either norm or avg.")
-        return
+    #if norm and avg:
+    #    print("No heatmaps produced. Please choose either norm or avg.")
+    #    return
     if norm:
         print(f"Producing normalized heatmaps...")
         csv_files = glob.glob(f'{currdir}\\*velocity_N.csv')
@@ -404,12 +336,12 @@ def Heat_Mapper(currdir, norm=False, avg=False):
 
 def run(data_path, args, data, currdir):
     Avg_Polar(data_path, args, data, currdir)
-    if args.v:
-        Velocity_Violin(currdir)
     if args.norm:
         Normalize(args, currdir)
     if args.avg:
         Average_CSVs(args, currdir)
+    if args.v:
+        Velocity_Violin(currdir, args.norm, args.avg)
     if args.p:
         Planarity_Comp(currdir)
     if args.num:
