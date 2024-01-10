@@ -16,20 +16,20 @@ The input text file contains a series of command lines. Each command line specif
   * --n 'num': Specifies number of Mice 
   * --p: Specifies planarity
   * --num: Specifies number of waves.
+  * --f: Specifies input
   
 Here's an example below of how your input.txt should look:
 Format should be "Filename:wave_ids" or "Directory:wave_ids". If you want all wave_ids analyzed then just include the "filename".
 
 ```python
 #filename:wave_ids --out .\\output --norm
-SLEEP_L1_REM_54 --out .\\output --norm
-SLEEP_L1_WAKE_54:1-30,32,34-50 --out .\\output --norm
---norm --out .\\output --avg --v --n 1 --p --num #This line specifies flags to run Step2.py.
+--f SLEEP_119_2_NREM_54 --norm
+--f CUMULATIVE --avg --v --num --p --norm --n 1 #This line specifies flags to run Step2.py.
 ```
 
 ## run_script.py
 
-This Python script reads commands from an input text file and executes them. The input file is specified using the 'input_path' variable. Each line in the input file corresponds to a command that is executed by invoking Python scripts named "step1.py." After processing all commands, the script runs "step2.py" with the last command from the input file.
+This Python script reads commands from an input text file and executes them. The input file is specified using the 'input_path' variable. Each line in the input file corresponds to a command that is executed by invoking Python scripts named "step1.py." After processing all commands, in other words when the CUMLATIVE tag is reached (representing the final line) the script runs "step2.py" with the last command from the input file.
 
 # Non-Helper Functions:
 ## Step 1:
@@ -173,4 +173,8 @@ For example, to run `run_script.py`:
 ```bash
 python run_script.py
 ```
+Using Tkinter, you will be able to select the directory in which the data/files/inputs to analyze are located. An example of this window is provided below
+<img width="943" alt="Screenshot 2024-01-10 at 3 53 55 AM" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/89df1800-8696-4182-af45-cce4a2eebf93">
+
+Once the directory is selected, an output folder specifying the date and time of the run will be created including all outputs as well as the .txt file with the parameters and inputs you selected.
 
