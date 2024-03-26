@@ -7,10 +7,19 @@ Examining the Sleep Slow Wave changes propagating across the cortex. Visualize w
 # Links for Documentation
 
 # Context/Justification/Content
+![image](https://github.com/cilantroxiao/landsness_imaging/assets/79768734/ac2bddd8-be7e-4c60-9b1d-e136ead08ff6)
 
+For researchers studying cortical wave-like activity and UP/DOWN state dynamics, effectively visualizing and interpreting the complex analysis results is crucial for gaining meaningful insights. While COBRAWAP provides a powerful and modular pipeline for analyzing wide-field calcium imaging data, seamless integration with intuitive visualization tools can further enhance the accessibility and interpretability of the analysis outcomes.
 
+Our visualization tool is designed to complement and collaborate with COBRAWAP, forming a unified and user-friendly platform for comprehensive cortical wave analysis. By seamlessly integrating with COBRAWAP's outputs, our tool bridges the gap between raw analysis results and their effective interpretation, empowering researchers with both programming and non-programming backgrounds to explore and understand the intricate dynamics of cortical wave activity and UP/DOWN state detections.
 
+Key features of our collaborative visualization solution include:
 
+1. Polar Histograms: Gain insights into the directional properties of cortical waves by visualizing their propagation directions as polar histograms, facilitating the identification of dominant propagation patterns.
+2. Velocity Heatmaps: Explore the spatial distribution of wave velocities across the imaging field, revealing regions with distinct wave propagation speeds and potential correlations with underlying cortical structures.
+3. Planarity Visualizations: Assess the planarity of cortical waves, a crucial characteristic for distinguishing propagating waves from locally synchronous activity, through intuitive visualizations that highlight deviations from planarity.
+
+Together, COBRAWAP and our visualization tool form a comprehensive and accessible platform for cortical wave research, fostering interdisciplinary collaboration, knowledge sharing, and ultimately driving scientific progress in this field.
 
 # How to run your code
 
