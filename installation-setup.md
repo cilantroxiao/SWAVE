@@ -1,5 +1,3 @@
-Sure, here's a more condensed version of the installation and setup section:
-
 Setting up the Development Environment
 ======================================
 
