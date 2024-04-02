@@ -4,7 +4,9 @@ Graphing COBRAWAP data
 # Description
 Examining the Sleep Slow Wave changes propagating across the cortex. Visualize wave characteristics comparing/contrasing 4 behavioral states: Wake(W), NREM (NR), REM (R). This is a data visualization tool that takes processed data from the  [COBRAWAP](https://github.com/NeuralEnsemble/cobrawap) pipeline and returns measures to graph the dynamic wave-like activity patterens found in the data. 
 
-# Links for Documentation
+# Documentation
+[Documentation](https://github.com/cilantroxiao/landsness_imaging/blob/aly_code/documentation.md)
+
 
 # Context/Justification/Content
 ![image](https://github.com/cilantroxiao/landsness_imaging/assets/79768734/ac2bddd8-be7e-4c60-9b1d-e136ead08ff6)
@@ -21,24 +23,20 @@ Key features of our collaborative visualization solution include:
 
 Together, COBRAWAP and our visualization tool form a comprehensive and accessible platform for cortical wave research, fostering interdisciplinary collaboration, knowledge sharing, and ultimately driving scientific progress in this field.
 
+# Installation/Set-up
+To run this tool, you'll need the following packages installed: 
+
+- pandas
+- matplotlib
+- list etc.
+
+Talk about COBRAWAP HERE + HOW TOOL WILL BE INTEGRATED
+
 # How to run your code
-
-## run_script.py
-
-This Python script reads commands from an input text file and executes them. The input file is specified using the 'input_path' variable. Each line in the input file corresponds to a command that is executed by invoking Python scripts named "step1.py." After processing all commands, in other words when the CUMLATIVE tag is reached (representing the final line) the script runs "step2.py" with the last command from the input file.
 
 ## input.txt
 
-The input text file contains a series of command lines. Each command line specifies the execution of Python scripts with certain arguments. The flags are as follows:
-
-  * --norm: Specifies normalization of data.
-  * --out 'directory'/'folder': Specifies the output directory or folder.
-  * --avg: Specifies average after data has been processed.
-  * --v: Specifies violin plot of velocities.
-  * --n 'num': Specifies number of Mice 
-  * --p: Specifies planarity
-  * --num: Specifies number of waves.
-  * --f: Specifies input
+The input text file contains a series of command lines. Each command line flag specifies the execution of different fucntions with certain arguments. Please refer to the documentation
   
 Here's an example below of how your input.txt should look:
 Format should be "Filename:wave_ids" or "Directory:wave_ids". If you want all wave_ids analyzed then just include the "filename".
@@ -68,7 +66,7 @@ Once the directory is selected, an output folder specifying the date and time of
 
 
 # Outputs
-
+#INSERT IMAGE HERE OF HOW OUTPUTS LOOK AND ARE FORMATTED and where they will be
 
 
 
