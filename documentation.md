@@ -1,8 +1,20 @@
-#Tool Structure
+# Tool Structure
 
 ## run_script.py
 
 This Python script reads commands from an input text file and executes them. The input file is specified using the 'input_path' variable. Each line in the input file corresponds to a command that is executed by invoking Python scripts named "step1.py." After processing all commands, in other words when the CUMLATIVE tag is reached (representing the final line) the script runs "step2.py" with the last command from the input file.
+
+## input.txt 
+The flags are as follows:
+
+  * --norm: Specifies normalization of data.
+  * --out 'directory'/'folder': Specifies the output directory or folder.
+  * --avg: Specifies average after data has been processed.
+  * --v: Specifies violin plot of velocities.
+  * --n 'num': Specifies number of Mice 
+  * --p: Specifies planarity
+  * --num: Specifies number of waves.
+  * --f: Specifies input
 
 
 
