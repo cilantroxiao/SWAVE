@@ -49,10 +49,9 @@ Format should be "Filename:wave_ids" or "Directory:wave_ids". If you want all wa
 ```
 
 ## Running your Code
-- Open the integrated terminal in VSCode by clicking on "View" in the menu and selecting "Terminal."
-- Navigate to the directory where your code is located using the `cd` command.
-- Run your code using the appropriate Python command, providing the script name as an argument.
-
+1. Open your terminal or command prompt.
+2. Navigate to the directory where your code is located using the `cd` command.
+3. Run the script/tool using the appropriate command, providing the necessary arguments if any.
 
 For example, to run `run_script.py`:
 
