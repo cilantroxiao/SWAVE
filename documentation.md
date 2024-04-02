@@ -1,3 +1,12 @@
+#Tool Structure
+
+## run_script.py
+
+This Python script reads commands from an input text file and executes them. The input file is specified using the 'input_path' variable. Each line in the input file corresponds to a command that is executed by invoking Python scripts named "step1.py." After processing all commands, in other words when the CUMLATIVE tag is reached (representing the final line) the script runs "step2.py" with the last command from the input file.
+
+
+
+
 # Non-Helper Functions:
 ## Step 1:
 ### `create_parser()`
