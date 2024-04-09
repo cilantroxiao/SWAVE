@@ -24,13 +24,13 @@ Key features of our collaborative visualization solution include:
 Together, COBRAWAP and our visualization tool form a comprehensive and accessible platform for cortical wave research, fostering interdisciplinary collaboration, knowledge sharing, and ultimately driving scientific progress in this field.
 
 # Installation/Set-up
-To run this tool, you'll need the following packages installed: 
+Before using our visualization tool, ensure that you have set up and run the COBRAWAP pipeline to process your data. Follow the installation and usage instructions provided in the [COBRAWAP](https://cobrawap.readthedocs.io/en/latest/pipeline.html) documentation to analyze your data and generate the necessary output files and file structure.
+
+To run our tool, you'll need the following packages [installed](https://github.com/cilantroxiao/landsness_imaging/blob/aly_code/installation-setup.md#prerequisites): 
 
 - pandas
 - matplotlib
 - list etc.
-
-Talk about COBRAWAP HERE + HOW TOOL WILL BE INTEGRATED
 
 # How to run your code
 
