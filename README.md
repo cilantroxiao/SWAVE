@@ -38,12 +38,12 @@ Talk about COBRAWAP HERE + HOW TOOL WILL BE INTEGRATED
 
 The input text file serves as a set of instructions for the visualization. Please refer to the [documentation](https://github.com/cilantroxiao/landsness_imaging/blob/aly_code/documentation.md#inputtxt) for more information.
   
-input.txt example:
+An example of how input.txt could look:
 
 ```python
 #filename:wave_ids --out .\\output --norm
---f SLEEP_119_2_NREM_54 --norm
---f SLEEP_119_2_NREM_54:1-30, 52, 54 --norm
+--f 'insert_Mice_Name' --norm
+--f 'insert_Mice_Name':1-30, 52, 54 --norm
 --f CUMULATIVE --avg --v --num --p --norm --n 1 #This line specifies flags to run Step2.py.
 ```
 
