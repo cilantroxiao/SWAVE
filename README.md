@@ -36,10 +36,9 @@ Talk about COBRAWAP HERE + HOW TOOL WILL BE INTEGRATED
 
 ## input.txt
 
-The input text file contains a series of command lines. Each command line flag specifies the execution of different fucntions with certain arguments. Please refer to the documentation
+The input text file serves as a set of instructions for the visualization. Please refer to the [documentation](https://github.com/cilantroxiao/landsness_imaging/blob/aly_code/documentation.md#inputtxt) for more information.
   
-Here's an example below of how your input.txt should look:
-Format should be "Filename:wave_ids" or "Directory:wave_ids". If you want all wave_ids analyzed then just include the "filename".
+input.txt example:
 
 ```python
 #filename:wave_ids --out .\\output --norm
