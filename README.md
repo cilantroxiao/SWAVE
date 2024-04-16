@@ -58,14 +58,11 @@ For example, to run `run_script.py`:
 python run_script.py
 ```
 Using Tkinter, you will be able to select the directory in which the data/files/inputs to analyze are located. An example of this window is provided below
-<img width="943" alt="Screenshot 2024-01-10 at 3 53 55 AM" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/89df1800-8696-4182-af45-cce4a2eebf93">
-
-Once the directory is selected, an output folder specifying the date and time of the run will be created including all outputs as well as the .txt file with the parameters and inputs you selected.
-
+<img width="946" alt="Screenshot 2024-04-16 at 2 42 48 PM" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/08779985-e5f3-4212-9b30-f53e31c211fe">
 
 # Outputs
-#INSERT IMAGE HERE OF HOW OUTPUTS LOOK AND ARE FORMATTED and where they will be
-
+For each iteration, a timestamped folder will be created including a text file with parameters and the corresponding visuals
+<img width="657" alt="Screenshot 2024-04-16 at 3 00 53 PM" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/81ce3387-298a-4ed5-88c0-c837730f3b70">
 
 
 # Liscenses / Legal
