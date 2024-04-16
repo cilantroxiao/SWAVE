@@ -19,7 +19,8 @@ Key features of our collaborative visualization solution include:
 
 1. Polar Histograms: Gain insights into the directional properties of cortical waves by visualizing their propagation directions as polar histograms, facilitating the identification of dominant propagation patterns.
 2. Velocity Heatmaps: Explore the spatial distribution of wave velocities across the imaging field, revealing regions with distinct wave propagation speeds and potential correlations with underlying cortical structures.
-3. Planarity Visualizations: Assess the planarity of cortical waves, a crucial characteristic for distinguishing propagating waves from locally synchronous activity, through intuitive visualizations that highlight deviations from planarity.
+3. Planarity Visualizations: Assess the planarity (cortical vs. subcortical) of the waves through intuitive visualizations that highlight deviations from planarity.
+4. FOR THE FUTURE: Locality Index to access local vs global waves
 
 Together, COBRAWAP and our visualization tool form a comprehensive and accessible platform for cortical wave research, fostering interdisciplinary collaboration, knowledge sharing, and ultimately driving scientific progress in this field.
 
