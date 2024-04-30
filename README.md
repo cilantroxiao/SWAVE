@@ -27,11 +27,9 @@ Together, COBRAWAP and our visualization tool form a comprehensive and accessibl
 # Installation/Set-up
 Before using our visualization tool, ensure that you have set up and run the COBRAWAP pipeline to process your data. Follow the installation and usage instructions provided in the [COBRAWAP](https://cobrawap.readthedocs.io/en/latest/pipeline.html) documentation to analyze your data and generate the necessary output files and file structure.
 
-To run our tool, you'll need the following packages. Refer to these detailed instructinos to [install](https://github.com/cilantroxiao/landsness_imaging/blob/aly_code/installation-setup.md#prerequisites) them: 
+To run our tool, you'll need the following packages. Refer to these detailed instructions to [install](https://github.com/cilantroxiao/landsness_imaging/blob/aly_code/installation-setup.md#prerequisites) them: 
 
-- pandas
-- matplotlib
-- list etc.
+- pandas, matplotlib, numpy, pathlib, glob, csv, os, argparse, difflib, scipy, seaborn
 
 # How to run your code
 
