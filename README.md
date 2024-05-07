@@ -23,10 +23,11 @@ Key features of our collaborative visualization solution include:
 2. Velocity Heatmaps: Explore the spatial distribution of wave velocities across the imaging field, revealing regions with distinct wave propagation speeds and potential correlations with underlying cortical structures.
     <img width="946" alt="Velocity Heatmap Example" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/972b635a-b196-43ea-8e36-2a8739e6bcdf">
 
-  
-4. Planarity Visualizations: Assess the planarity (cortical vs. subcortical) of the waves through intuitive visualizations that highlight deviations from planarity.
-   <img width="946" alt="Planarity Example" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/eda3feef-9b72-4993-b0e5-f37fbc2e1e2c">
-6. FOR THE FUTURE: Locality Index to access local vs global waves
+3. Planarity Visualizations: Assess the planarity (cortical vs. subcortical) of the waves through intuitive visualizations that highlight deviations from planarity.
+   <img width="747" alt="Screenshot 2024-05-07 at 2 14 56 PM" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/c5f9964e-d180-47c4-836e-f0016a27514f">
+4. Wave Incidents: fix later (num waves)
+  <img width="946" alt="Planarity Example" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/eda3feef-9b72-4993-b0e5-f37fbc2e1e2c">
+5. FOR THE FUTURE: Locality Index to access local vs global waves
 
 Together, COBRAWAP and our visualization tool form a comprehensive and accessible platform for cortical wave research, fostering interdisciplinary collaboration, knowledge sharing, and ultimately driving scientific progress in this field.
 
