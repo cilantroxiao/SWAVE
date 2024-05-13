@@ -9,14 +9,14 @@ Each command line flag specifies the execution of different functions with certa
 
 The flags are as follows:
 
-  * --norm: Specifies normalization of data.
-  * --out 'directory'/'folder': Specifies the output directory or folder.
-  * --avg: Specifies average after data has been processed.
-  * --v: Specifies violin plot of velocities.
-  * --n 'num': Specifies number of Mice 
-  * --p: Specifies planarity
-  * --num: Specifies number of waves.
-  * --f: Specifies input
+* `--f 'filename'`: Specifies input filenames and associated wavefronts.
+* `--norm`: Specifies normalization of data.
+* `--avg`: Specifies averaging data at the end.
+* `--v`: Specifies the creation of a violin plot of velocities.
+* `--p`: Specifies planarity.
+* `--num`: Specifies the number of waves.
+* `--n 'number'`: Specifies the number of mice.
+
 
 
 
