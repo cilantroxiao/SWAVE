@@ -27,7 +27,7 @@ Key features of our collaborative visualization solution include:
 
    <img width="500" alt="Planarity Example" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/c5f9964e-d180-47c4-836e-f0016a27514f">
 
-4. Wave Incidents: Analyze the frequency and distribution of cortical waves by comparing wave events to their total count, revealing patterns of activity across different regions.
+4. Wave Frequency: Analyze the number of waves per unit of time distribution of cortical waves, revealing patterns of activity across different regions.
 
   <img width="500" alt="Wave Incidents" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/eda3feef-9b72-4993-b0e5-f37fbc2e1e2c">
 
