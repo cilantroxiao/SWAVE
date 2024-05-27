@@ -122,10 +122,10 @@ def Polar_Histogram(path_head, filename, wave_ids, currdir):
     # Create a polar histogram each method
     fig, (ax, ax1) = plt.subplots(1,2, subplot_kw={'projection': 'polar'})
     ax.hist(angles, bins=36, range=(-np.pi, np.pi), density=True)
-    ax.set_title('normalized by vector length')
+    ax.set_title('All waves have equal weight')
 
     ax1.hist(angles_norm, bins=36, range=(-np.pi, np.pi), density=True)
-    ax1.set_title('normalized by # vectors in wave')
+    ax1.set_title('Each wave weighted by # of vectors')
     
     # Plot the weighted average line
     ax.plot([0, weighted_average_angle], [0, ax.get_ylim()[1]], color='red', linewidth=2)

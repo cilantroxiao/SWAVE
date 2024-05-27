@@ -11,45 +11,6 @@ import os
 from scipy.stats import gaussian_kde
 import seaborn as sns
 grid_size = 128
-'''
-def Velocity_Violin(currdir, norm=False, avg=False):
-    if norm and avg:
-        print("No velocity violins produced. Please choose either norm or avg.")
-        return
-    if norm:
-        print(f"Graphing normalized velocity violins...")
-        flagType = 'velocity_N.csv'
-        csv_files = glob.glob(f'{currdir}\\*velocity_N.csv')
-    elif avg:
-        print(f"Graphing averaged velocity violins...")
-        flagType = 'v-avg.csv'
-        csv_files = glob.glob(f'{currdir}\\*v-avg*.csv')
-    else:
-        print(f"Graphing velocity violins...")
-        flagType = 'velocity.csv'
-        csv_files = glob.glob(f'{currdir}\\*velocity.csv')
-        
-    v_list = np.empty(grid_size**2)
-    for index, file in enumerate(csv_files):
-        df = pd.read_csv(file, header=None)
-        file_name = os.path.splitext(os.path.basename(file))[0].replace(flagType,'')
-        print(file_name)
-        i = 0
-        for row_index, row in df.iterrows():
-            for col_index, col in enumerate(row):
-                if i < len(v_list):
-                    v_list[i] = row[col_index]
-                i += 1
-        print(f"Mouse: {file_name}, Actual Length: {i}")
-        fig, ax = plt.subplots()
-        kde = gaussian_kde(v_list)
-        scaling_factor = 1 / np.max(kde(v_list))
-        sns.violinplot(data=[v_list * scaling_factor], ax=ax, bw='scott', showfliers=False)
-
-        fig.suptitle(f"{file_name} Velocity Density Distribution", fontsize=15)
-        ax.set_ylabel("log10 channel velocity [mm/s]")
-        plt.savefig(os.path.join(currdir, f'{file_name}_violin.png'))
-'''
 def Velocity_Violin(currdir, norm=False, avg=False):
     if norm:
         print(f"Graphing normalized velocity violins...")
@@ -182,7 +143,7 @@ def Num_Waves_Comp(currdir):
         bgraph[0].set_color('red')
         bgraph[1].set_color('blue')
         bgraph[2].set_color('green')
-        plt.ylabel('Planarity')
+        plt.ylabel('Number of Waves')
         plt.title(mouse)
         plt.gca().spines['top'].set_visible(False)
         plt.gca().spines['right'].set_visible(False)
@@ -384,9 +345,11 @@ def Num_Waves_Topo_Cumulative(currdir):
     wake_list = np.zeros(grid_size**2)
     nrem_list = np.zeros(grid_size**2)
     rem_list = np.zeros(grid_size**2)
-    count = [0] * 3 #wake, nrem, rem
+    
+    #initialize lists of channel count, per state
+    count = [[0 for _ in range(grid_size**2)] for _ in range(3)]#wake, nrem, rem
+
     flagType = 'numwave_topo'
-    #csv_files = glob.glob(f'D:\\Sandro_Code\\landsness_imaging\\output\\temp\\*{flagType}.csv')
     csv_files = glob.glob(f'{currdir}\\*{flagType}.csv') #maybe use a 3 pronged if statement to get rid of the need for the flagType variable
     for file in csv_files:
         channel_list = np.genfromtxt(file, delimiter=',')
@@ -397,35 +360,26 @@ def Num_Waves_Topo_Cumulative(currdir):
         for i, channel in enumerate(channel_list):
             if 'WAKE' in str(file_name):
                 wake_list[i] += channel_list[i]
-                count[0] += 1
+                count[0][i] += 1
             elif 'NREM' in str(file_name):
                 nrem_list[i] += channel_list[i]
-                count[1] += 1
+                count[1][i] += 1
             elif 'REM' in str(file_name):
                 rem_list[i] += channel_list[i]
-                count[2] += 1
+                count[2][i] += 1
 
-    
         #create individual logic to avoid warnings, unwanted outputs, 
         wake_list = np.divide(wake_list, count[0])
         nrem_list = np.divide(nrem_list, count[1])
         rem_list = np.divide(rem_list, count[2])
-        wake_grid = np.rot90(wake_list.reshape(-1, grid_size))
-        nrem_grid = np.rot90(nrem_list.reshape(-1, grid_size))
-        rem_grid = np.rot90(rem_list.reshape(-1, grid_size))
+        wake_grid = wake_list.reshape(-1, grid_size) 
+        nrem_grid = nrem_list.reshape(-1, grid_size)
+        rem_grid = rem_list.reshape(-1, grid_size)
 
         #csv
-
-       # with open(Path(f"{currdir}\\{file_name}.csv"), 'r') as f:
-
         np.savetxt(f"{currdir}\\wake_numwave_topo.csv", wake_grid, delimiter=',')
-        #np.savetxt(f"D:\\Sandro_Code\\landsness_imaging\\output\\temp\\nrem_numwave_topo.csv", nrem_grid, delimiter=',')
         np.savetxt(f"{currdir}\\nrem_numwave_topo.csv", nrem_grid, delimiter=',')
         np.savetxt(f"{currdir}\\rem_numwave_topo.csv", rem_grid, delimiter=',')
-        #np.savetxt(f".\\output\\{filename}_numwave_topo.csv", rotated_grid, delimiter=',')
-
-
-
 
         # heatmap
         plt.figure(figsize=(10, 8))
@@ -467,10 +421,10 @@ def Num_Waves_Topo_Cumulative(currdir):
 
 def run(data_path, args, data, currdir):
     Avg_Polar(data_path, args, data, currdir) #averge polar histogram across all mice
-    #if args.norm:
-        #Normalize(args, currdir)
-    #if args.avg:
-        #Average_CSVs(args, currdir)
+    if args.norm:
+        Normalize(args, currdir)
+    if args.avg:
+        Average_CSVs(args, currdir)
     if args.v:
         Velocity_Violin(currdir, args.norm, args.avg) 
     if args.p:

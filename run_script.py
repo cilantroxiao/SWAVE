@@ -19,7 +19,7 @@ def create_parser():
     parser.add_argument('--avg', action='store_true', help='avg data at end?')
     parser.add_argument('--v', action='store_true', help='violin plot of velocities?')
     parser.add_argument('--p', action='store_true', help='planarity')
-    parser.add_argument('--num', action='store_true', help='num of waves')
+    parser.add_argument('--freq', action='store_true', help='frequency of waves')
     parser.add_argument('--n', help='number of mice')
     return parser
 
