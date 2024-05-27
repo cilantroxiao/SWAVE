@@ -1,14 +1,14 @@
-# Landsness Imaging COBRAWAP Project
-Graphing COBRAWAP data
+# SWAVE
+Sleep Wave Analysis Visualization Engine
 
-# Description
+## Description
 Examining the Sleep Slow Wave changes propagating across the cortex. Visualize wave characteristics comparing/contrasing 3 behavioral states: Wake(W), NREM (NR), REM (R). This is a data visualization tool that takes processed data from the  [COBRAWAP](https://github.com/NeuralEnsemble/cobrawap) pipeline and returns measures to graph the dynamic wave-like activity patterens found in the data. 
 
-# Documentation
+## Documentation
 [Documentation](https://github.com/cilantroxiao/landsness_imaging/blob/aly_code/documentation.md)
 
 
-# Context/Justification/Content
+## Context/Justification/Content
 ![image](https://github.com/cilantroxiao/landsness_imaging/assets/79768734/ac2bddd8-be7e-4c60-9b1d-e136ead08ff6)
 
 For researchers studying cortical wave-like activity and Peak/Trough state dynamics, effectively visualizing and interpreting the complex analysis results is crucial for gaining meaningful insights. While COBRAWAP provides a powerful and modular pipeline for analyzing wide-field calcium imaging data, seamless integration with intuitive visualization tools can further enhance the accessibility and interpretability of the analysis outcomes.
@@ -27,7 +27,7 @@ Key features of our collaborative visualization solution include:
 
    <img width="500" alt="Planarity Example" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/c5f9964e-d180-47c4-836e-f0016a27514f">
 
-4. Wave Incidents: Analyze the frequency and distribution of cortical waves by comparing wave events to their total count, revealing patterns of activity across different regions.
+4. Wave Frequency: Analyze the number of waves per unit of time distribution of cortical waves, revealing patterns of activity across different regions.
 
   <img width="500" alt="Wave Incidents" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/eda3feef-9b72-4993-b0e5-f37fbc2e1e2c">
 
@@ -38,16 +38,16 @@ Key features of our collaborative visualization solution include:
 
 Together, COBRAWAP and our visualization tool form a comprehensive and accessible platform for cortical wave research, fostering interdisciplinary collaboration, knowledge sharing, and ultimately driving scientific progress in this field.
 
-# Installation/Set-up
+## Installation/Set-up
 Before using our visualization tool, ensure that you have set up and run the COBRAWAP pipeline to process your data. Follow the installation and usage instructions provided in the [COBRAWAP](https://cobrawap.readthedocs.io/en/latest/pipeline.html) documentation to analyze your data and generate the necessary output files and file structure.
 
 To run our tool, you'll need the following packages. Refer to these detailed instructions to [install](https://github.com/cilantroxiao/landsness_imaging/blob/aly_code/installation-setup.md#prerequisites) them: 
 
 - pandas, matplotlib, numpy, pathlib, glob, csv, os, argparse, difflib, scipy, seaborn
 
-# How to run your code
+## How to run your code
 
-## input.txt
+### input.txt
 
 The input text file serves as a set of instructions for the visualization. Please refer to the [documentation](https://github.com/cilantroxiao/landsness_imaging/blob/aly_code/documentation.md#inputtxt) for more information.
   
@@ -60,7 +60,7 @@ An example of how input.txt could look:
 --f CUMULATIVE --avg --v --num --p --norm --n 1 #This line specifies flags to run Step2.py.
 ```
 
-## Running your Code
+### Running your Code
 1. Open your terminal or command prompt.
 2. Navigate to the directory where your code is located using the `cd` command.
 3. Run the script/tool using the appropriate command, providing the necessary arguments if any.
@@ -73,11 +73,11 @@ python run_script.py
 Using Tkinter, you will be able to select the directory in which the data/files/inputs to analyze are located. An example of this window is provided below
 <img width="946" alt="Screenshot 2024-04-16 at 2 42 48 PM" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/08779985-e5f3-4212-9b30-f53e31c211fe">
 
-# Outputs
+## Outputs
 For each iteration, a timestamped folder will be created including a text file with parameters and the corresponding visuals
 <img width="657" alt="Screenshot 2024-04-16 at 3 00 53 PM" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/81ce3387-298a-4ed5-88c0-c837730f3b70">
 
 
-# Liscenses / Legal
+## Liscenses / Legal
 
 

@@ -1,4 +1,4 @@
-Setting up the Development Environment
+Installation Set-up
 ======================================
 
 1. Install Python

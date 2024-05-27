@@ -1,4 +1,4 @@
-# Tool Structure
+# Documentation
 
 ## run_script.py
 
