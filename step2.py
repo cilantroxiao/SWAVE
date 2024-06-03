@@ -2,117 +2,164 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
-import matplotlib.colors as mcolors
-from difflib import SequenceMatcher
 import glob
 import csv
-from step1 import states, mice, similar, divide, add, check_mice
 import os
 from scipy.stats import gaussian_kde
 import seaborn as sns
 grid_size = 128
-def Velocity_Violin(currdir, norm=False, avg=False):
-    if norm:
-        print(f"Graphing normalized velocity violins...")
-        flagType = 'velocity_N'
-        csv_files = glob.glob(f'{currdir}\\*velocity_N.csv')
-    elif avg:
-        print(f"Graphing averaged velocity violins...")
-        flagType = 'v-avg'
-        csv_files = glob.glob(f'{currdir}\\*v-avg*.csv')
+states = ['WAKE', 'NREM', 'REM']
+
+def Velocity_Violin(args, currdir):
+    #group csvs depending if norm flag is called
+    if args.norm:
+        print(f"Entered Velocity_Violin with Norm Flag")
+        flagType = 'velocity_norm'
+        csv_files = glob.glob(f'{currdir}\\*velocity_norm.csv')
     else:
-        print(f"Graphing velocity violins...")
+        print(f"Entered Velocity_Violin")
         flagType = 'velocity'
         csv_files = glob.glob(f'{currdir}\\*velocity.csv')
 
-    print("current directory: ", currdir)
-    print("csv_files: ", csv_files)
-    
-    for index, file in enumerate(csv_files):
+    #iterate through all csvs
+    for file in csv_files:
         df = pd.read_csv(file, header=None)
         file_name = os.path.splitext(os.path.basename(file))[0].replace(flagType,'')
-        print(file_name)
-
+        
+        #remove outliers based on quartiles
         v_list = df.values.flatten()
         Q1 = np.percentile(v_list, 25)
         Q3 = np.percentile(v_list, 75)
         IQR = Q3 - Q1
         v_list_no_outliers = v_list[(v_list >= Q1 - 1.5 * IQR) & (v_list <= Q3 + 1.5 * IQR)]
 
-        print(f"Mouse: {file_name}, Original Length: {len(v_list)}, Length after removing outliers: {len(v_list_no_outliers)}")
-
+        #create figure
         fig, ax = plt.subplots()
-
+        
+        #scaling
         kde = gaussian_kde(v_list_no_outliers)
         scaling_factor = 1 / np.max(kde(v_list_no_outliers))
 
+        #violin plot parameters
         sns.violinplot(data=[v_list_no_outliers * scaling_factor], ax=ax, bw='scott')
-
-        fig.suptitle(f"{file_name} Velocity Density Distribution", fontsize=15)
+        abbreviated_title = file_name.replace('velocity_norm','').replace('velocity','')
+        fig.suptitle(f"{abbreviated_title} velocity density distribution", fontsize=15)
         ax.set_ylabel("log10 channel velocity [mm/s]")
+        ax.set_xlabel("Mouse")
+
+        plt.savefig(os.path.join(currdir, f'{file_name}violin.png'))
+        plt.close()
+
+    average_files = glob.glob(f'{currdir}\\*average.csv')
+    #iterate through average csvs
+    for file in average_files:
+        df = pd.read_csv(file, header=None)
+        file_name = os.path.splitext(os.path.basename(file))[0]
+        
+        #remove outliers based on quartiles
+        v_list = df.values.flatten()
+        Q1 = np.percentile(v_list, 25)
+        Q3 = np.percentile(v_list, 75)
+        IQR = Q3 - Q1
+        v_list_no_outliers = v_list[(v_list >= Q1 - 1.5 * IQR) & (v_list <= Q3 + 1.5 * IQR)]
+
+        #create figure
+        fig, ax = plt.subplots()
+        
+        #scaling
+        kde = gaussian_kde(v_list_no_outliers)
+        scaling_factor = 1 / np.max(kde(v_list_no_outliers))
+
+        #violin plot parameters
+        sns.violinplot(data=[v_list_no_outliers * scaling_factor], ax=ax, bw='scott')
+        abbreviated_title = file_name.replace('velocity_norm','').replace('velocity','')
+        fig.suptitle(f"{abbreviated_title} velocity density distribution", fontsize=15)
+        ax.set_ylabel("log10 channel velocity [mm/s]")
+        ax.set_xlabel("Mouse")
+
         plt.savefig(os.path.join(currdir, f'{file_name}_violin.png'))
         plt.close()
 
-def Normalize(args, currdir):
-    print("Normalizing CSVs...")
-    flagType = 'velocity_N.csv'
+def Normalize(currdir):
+    print("Entered Normalize")
+
+    #group csvs, initialize means list for each csv
+    flagType = 'velocity.csv'
     csv_files = glob.glob(f'{currdir}\\*{flagType}')
-    mouse_n = 0
-    sums = [0] * int(args.n)
+    means = [0] * len(csv_files)
+
+    #iterate through all csvs
     for i, file in enumerate(csv_files):
         df = pd.read_csv(file, header=None)
         file_name = os.path.splitext(os.path.basename(file))[0]
-        sums[mouse_n] += df.sum().sum(axis=0)
-        if i + 1 < len(csv_files):
-            if not similar(file_name, os.path.splitext(os.path.basename(csv_files[i+1]))[0]):
-                mouse_n += 1
-    denominator = [x / (128**2 * 3) for x in sums]
-    mouse_n = 0
-    for i, file in enumerate(csv_files):
-        df = pd.read_csv(file, header=None)
-        file_name = os.path.splitext(os.path.basename(file))[0]
-        df = df.div(denominator[mouse_n])
-        df.to_csv(Path(file), index = False, header = False)
-        if i + 1 < len(csv_files) and not similar(file_name, os.path.splitext(os.path.basename(csv_files[i+1]))[0]):
-            mouse_n += 1
+
+        #calculate mean for denominator
+        #sum elements
+        means[i] += df.sum().sum(axis=0) 
+        
+        #count non-zero elements to calculate mean
+        bool_df = df.astype(bool)
+        non_zero_count = bool_df.sum().sum()
+        
+        #calculate mean
+        means[i] /= non_zero_count
+        
+        #normalize data
+        normalized_grid = df / means[i]
+
+        normalized_path = os.path.join(currdir, f'{file_name}_norm.csv')
+        normalized_grid.to_csv(normalized_path, index = False, header = False)
 
 def Average_CSVs(args, currdir):
-    grid_average = [[0 for _ in range(grid_size)] for _ in range(grid_size)]
-    averages_nrem, averages_rem, averages_wake = pd.DataFrame(grid_average), pd.DataFrame(grid_average), pd.DataFrame(grid_average)
-    flagTypeNorm = 'velocity_N.csv'
-    norm_path = f'{currdir}\\*{flagTypeNorm}'
-    flagTypeAvg = 'velocity.csv'
-    avg_path = f'{currdir}\\*{flagTypeAvg}'
-    #args.norm
-    if args.norm:
-        print("Producing average norm CSVs...")
-        nrem_csv_files = [x for x in glob.glob(norm_path) if 'NREM' in x]
-        rem_csv_files = [x for x in glob.glob(norm_path) if 'REM' in x and 'NREM' not in x]
-        wake_csv_files = [x for x in glob.glob(norm_path) if 'WAKE' in x]
-    #if not norm
-    else:
-        print("Producing average CSVs...")
-        nrem_csv_files = [x for x in glob.glob(avg_path) if 'NREM' in x]
-        rem_csv_files = [x for x in glob.glob(avg_path) if 'REM' in x and 'NREM' not in x]
-        wake_csv_files = [x for x in glob.glob(avg_path) if 'WAKE' in x]
+    print("Entered Average_CSVs")
 
-    for row in range(grid_size):
-        for column in range(grid_size):
-            add(nrem_csv_files, row, column, averages_nrem)
-            add(rem_csv_files, row, column, averages_rem)
-            add(wake_csv_files, row, column, averages_wake)
-    if len(nrem_csv_files) > 0:
-        nrem_avg_path = norm_path.replace('*velocity', 'NREM_v-avg')
-        divide(averages_nrem, len(nrem_csv_files)).to_csv(Path(nrem_avg_path), index = False, header = False, mode='w+')
-    if len(rem_csv_files) > 0:
-        rem_avg_path = norm_path.replace('*velocity', 'REM_v-avg')
-        divide(averages_rem, len(rem_csv_files)).to_csv(Path(rem_avg_path), index = False, header = False, mode='w+')
-    if len(wake_csv_files) > 0:
-        wake_avg_path = norm_path.replace('*velocity', 'WAKE_v-avg')
-        divide(averages_wake, len(wake_csv_files)).to_csv(Path(wake_avg_path), index = False, header = False, mode='w+') 
+    if args.norm:
+        flagType = 'velocity_norm.csv'
+    else:
+        flagType = 'velocity.csv'
+
+    all_files = glob.glob(f'{currdir}\\*{flagType}')
+
+    #group csvs by state
+    WAKE_csvs = [file for file in all_files if 'WAKE' in os.path.basename(file)]
+    NREM_csvs = [file for file in all_files if 'NREM' in os.path.basename(file)]
+    REM_csvs = [file for file in all_files if 'REM' in os.path.basename(file) and 'NREM' not in os.path.basename(file)]
+
+    #initialize sum dfs for means by state
+    WAKE_sums_df = pd.DataFrame(np.zeros((grid_size, grid_size)))
+    NREM_sums_df = pd.DataFrame(np.zeros((grid_size, grid_size)))
+    REM_sums_df = pd.DataFrame(np.zeros((grid_size, grid_size)))
+
+    #add all csvs to respective sum dfs
+    for file in all_files:
+        df = pd.read_csv(file, header=None)
+        if file in WAKE_csvs:
+            WAKE_sums_df += df
+        elif file in NREM_csvs:
+            NREM_sums_df += df
+        elif file in REM_csvs:
+            REM_sums_df += df
+
+    #calculate wake averages
+    if len(WAKE_csvs) > 0:
+        WAKE_avg = WAKE_sums_df / len(WAKE_csvs)
+        WAKE_avg_path = os.path.join(currdir, "WAKE_velocity_average.csv")
+        WAKE_avg.to_csv(WAKE_avg_path, index = False, header = False)
+
+    #calculate nrem averages
+    if len(NREM_csvs) > 0:
+        NREM_avg = NREM_sums_df / len(NREM_csvs)
+        NREM_avg_path = os.path.join(currdir, "NREM_velocity_average.csv")
+        NREM_avg.to_csv(NREM_avg_path, index = False, header = False)
+
+    #calculate rem averages
+    if len(REM_csvs) > 0:
+        REM_avg = REM_sums_df / len(REM_csvs)
+        REM_avg_path = os.path.join(currdir, "REM_velocity_average.csv")
+        REM_avg.to_csv(REM_avg_path, index = False, header = False)
    
 def Num_Waves_Comp(currdir):
-    print(f"Graphing number of waves...")
+    print("Entered Num_waves_Comp")
     dict = {}
     flagType = '_numwaves'
     csv_files = glob.glob(f'{currdir}\\*{flagType}.csv')
@@ -120,70 +167,80 @@ def Num_Waves_Comp(currdir):
         file_name = os.path.splitext(os.path.basename(file))[0]
         file_name_nonum = file_name.replace(flagType,'')
         file_name_nostate = file_name_nonum.replace('WAKE','').replace('NREM','').replace('REM','')
-        #with open(Path(f"{currdir}\\{file_name}.csv"), 'r') as f:
+        
+    #read and store data by state
         with open(os.path.join(currdir, f'{file_name}.csv'), 'r') as f:
             csv_reader = csv.reader(f)
-            data = next(csv_reader)
+            state_data = next(csv_reader)
         if file_name_nostate not in dict:
             dict[file_name_nostate] = [0,0,0]
         if 'WAKE' in str(file_name):
-            dict[file_name_nostate][0] = float(data[0])
+            dict[file_name_nostate][0] = float(state_data[0])
         elif 'NREM' in str(file_name):
-            dict[file_name_nostate][1] = float(data[0])
+            dict[file_name_nostate][1] = float(state_data[0])
         elif 'REM' in str(file_name):
-            dict[file_name_nostate][2] = float(data[0])
-    df = pd.DataFrame.from_dict(dict, orient='index', columns=states)
-    #df.to_csv(Path(f"{currdir}\\numwaves_comp.csv"), index = True, mode='w+')
-    df.to_csv(os.path.join(currdir, 'numwaves_comp.csv'), index = True, mode='w+') #save to csv
+            dict[file_name_nostate][2] = float(state_data[0])
     
-    #individual bar graphs
+    #save to csv
+    df = pd.DataFrame.from_dict(dict, orient='index', columns=states)
+    df.to_csv(os.path.join(currdir, 'numwaves_comp.csv'), index = True, mode='w+')
+    
+#####individual bar graphs
     for mouse in dict.keys():
         x = df.loc[mouse]
-        bgraph = plt.bar(states,x)
-        bgraph[0].set_color('red')
-        bgraph[1].set_color('blue')
-        bgraph[2].set_color('green')
+        plt.bar(states,x, color = ['#FF6347', '#4682B4', '#32CD32'])
+        #labels
         plt.ylabel('Number of Waves')
-        plt.title(mouse)
+        plt.xlabel('State')
+        plt.title(f'{mouse} number of waves')
+        #appearance
+        plt.tight_layout()
         plt.gca().spines['top'].set_visible(False)
         plt.gca().spines['right'].set_visible(False)
-        #plt.savefig(f"{currdir}\\{mouse}_numwaves.png")
+       
         plt.savefig(os.path.join(currdir, f'{mouse}_numwaves.png'))
         plt.close()
+
     plt.clf()
     
-    #line plot
+#####line plot
     for mouse in dict.keys():
         x = df.loc[mouse]
         x_masked = np.where(x == 0, np.nan, x)
         plt.plot(states, x_masked, label=mouse, marker='o', linewidth=2)
+    #labels
+    plt.legend(loc='upper left', bbox_to_anchor=(1.05, 1), fontsize='small')
+    plt.title('Number of waves across states')
+    plt.ylabel('Number of Waves')
+    plt.xlabel('State')
+    #appearance
+    plt.tight_layout()
     plt.gca().spines['top'].set_visible(False)
     plt.gca().spines['right'].set_visible(False)
-    plt.legend(loc='upper left', bbox_to_anchor=(1.05, 1), fontsize='small')
-    plt.title('Number of Waves Across States Comparison')
-    plt.tight_layout()
-    #plt.savefig(f'{currdir}\\numwaves_comp.png')
+    
     plt.savefig(os.path.join(currdir, 'numwaves_comp.png'))
     plt.close()
     plt.clf()
 
-    #total waves per state bar graph
+#####total waves per state bar graph
     df_total = df.sum(axis = 0) #sum up rows of table
     x = df_total
-    bgraph= plt.bar(states,x)
-    bgraph[0].set_color('red')
-    bgraph[1].set_color('blue')
-    bgraph[2].set_color('green')
-    plt.title('Total Number of Waves')
-    plt.xlabel('number of waves')
+    plt.bar(states,x, color = ['#FF6347', '#4682B4', '#32CD32'])
+    #labels
+    plt.title('Total number of waves')
+    plt.ylabel('Number of Waves')
+    plt.xlabel('State')
+    #appearance
+    plt.tight_layout()
     plt.gca().spines['top'].set_visible(False)
     plt.gca().spines['right'].set_visible(False)
-    #plt.savefig(f"{currdir}\\numwaves_total.png")
+    
     plt.savefig(os.path.join(currdir, 'numwaves_total.png'))
     plt.close()
     plt.clf()
 
 def Avg_Polar(data_path, args, data, currdir):
+    
     # Master list containing every x and y coord based on parameter/argument
     all_directionY = []
     all_directionX = []
@@ -192,7 +249,9 @@ def Avg_Polar(data_path, args, data, currdir):
     avg_y_normalized = []
 
     all_files = [entry['filename'] for entry in data]
-    print(f"Graphing polar histogram for entries: {all_files}...")
+    
+    print(f"Entered Avg_Polar for {all_files}")
+
     #iterate through each mouse
     for entry in data:
         filename = entry['filename']
@@ -232,22 +291,24 @@ def Avg_Polar(data_path, args, data, currdir):
     # Create a polar histogram each method
     fig, (ax, ax1) = plt.subplots(1,2, subplot_kw={'projection': 'polar'})
     ax.hist(angles, bins=36, range=(-np.pi, np.pi), density=True)
-    ax.set_xlabel('normalized by vector length')
+    ax.set_xlabel('Normalized by vector length')
 
     ax1.hist(angles_norm, bins=36, range=(-np.pi, np.pi), density=True)
-    ax1.set_xlabel('normalized by # vectors in wave')
+    ax1.set_xlabel('Normalized by # vectors in wave')
     
     # Plot the weighted average line
     ax.plot([0, weighted_average_angle], [0, ax.get_ylim()[1]], color='red', linewidth=2)
     ax1.plot([0, weighted_average_angle1], [0, ax1.get_ylim()[1]], color='black', linewidth=2)
 
     setOutputName = "avg_polar"
-    fig.suptitle(f"avg for {args.n} {'mouse' if args.n == '1' else 'mice'}", fontsize=16)
-    fig.savefig(os.path.join(currdir, f'{setOutputName}.png'))
+    fig.suptitle(f"Average for {args.n} {'mouse' if args.n == '1' else 'mice'}", fontsize=16)
+
+    fig_path = os.path.join(currdir, f'{setOutputName}.png')
+    fig.savefig(fig_path)
     plt.close()
 
 def Planarity_Comp(currdir):
-    print(f"Graphing planarity...")
+    print("Entered Planarity_Comp")
     dict = {}
     flagType = '_planarity'
     csv_files = glob.glob(f'{currdir}\\*{flagType}.csv')
@@ -255,33 +316,30 @@ def Planarity_Comp(currdir):
         file_name = os.path.splitext(os.path.basename(file))[0]
         file_name_noplanarity = file_name.replace(flagType,'')
         file_name_nostate = file_name_noplanarity.replace('WAKE','').replace('NREM','').replace('REM','')
-        #with open(Path(f"{currdir}\\{file_name}.csv"), 'r') as f:
+
+        #read and store data by state
         with open(os.path.join(currdir, f'{file_name}.csv'), 'r') as f:
             csv_reader = csv.reader(f)
-            data = next(csv_reader)
+            state_data = next(csv_reader)
         if file_name_nostate not in dict:
             dict[file_name_nostate] = [0,0,0]
         if 'WAKE' in str(file_name):
-            dict[file_name_nostate][0] = float(data[0])
+            dict[file_name_nostate][0] = float(state_data[0])
         elif 'NREM' in str(file_name):
-            dict[file_name_nostate][1] = float(data[0])
+            dict[file_name_nostate][1] = float(state_data[0])
         elif 'REM' in str(file_name):
-            dict[file_name_nostate][2] = float(data[0])
-        print("planarity dict", dict)
+            dict[file_name_nostate][2] = float(state_data[0])
             
     df = pd.DataFrame.from_dict(dict, orient='index', columns=states)
-    #df.to_csv(Path(f"{currdir}\\planarity_comp.csv"), index = True, mode='w+')
     df.to_csv(os.path.join(currdir, 'planarity_comp.csv'), index = True, mode='w+') #save to csv
+
     #individual bar graphs
     for mouse in dict.keys():
         x = df.loc[mouse]
-        bgraph = plt.bar(states,x)
-        bgraph[0].set_color('red')
-        bgraph[1].set_color('blue')
-        bgraph[2].set_color('green')
+        plt.bar(states,x, color = ['#FF6347', '#4682B4', '#32CD32'])
         plt.ylabel('Planarity')
-        plt.title(mouse)
-        #plt.savefig(f"{currdir}\\{mouse}_planarity.png")
+        plt.xlabel('State')
+        plt.title(f"{mouse} planarity")
         plt.savefig(os.path.join(currdir, f'{mouse}_planarity.png'))
         plt.close()
     plt.clf()
@@ -291,145 +349,412 @@ def Planarity_Comp(currdir):
         x = df.loc[mouse]
         x_masked = np.where(x == 0, np.nan, x)
         plt.plot(states, x_masked, label=mouse, marker='o', linewidth=2)
+    #labels
+    plt.ylabel('Planarity')
+    plt.xlabel('State')
     plt.legend(loc='upper left', bbox_to_anchor=(1.05, 1), fontsize='small')
-    plt.title('Planarity Across States Comparison')
+    plt.title('Planarity across states comparison')
+    #appearance
     plt.tight_layout()
-    #plt.savefig(f'{currdir}\\planarity_comp.png')
+
     plt.savefig(os.path.join(currdir, 'planarity_comp.png'))
+    plt.close()
     plt.clf()
 
-def Velocity_Topo_Average(currdir, norm=False, avg=False):
-    if norm:
-        print(f"Producing normalized heatmaps...")
-        csv_files = glob.glob(f'{currdir}\\*velocity_N.csv')
-        scale_min = 0
-        scale_max = 2
-    elif avg:
-        print(f"Producing average heatmaps...")
-        csv_files = glob.glob(f'{currdir}\\*v-avg*.csv')
-        scale_min = 0
-        scale_max = 2
+def Velocity_Topo_Average(args, currdir):
+    #group csvs depending if norm flag is called
+    if args.norm:
+        print("Entered Velocity_Topo_Average with Norm Flag")
+        csv_files = glob.glob(f'{currdir}\\*velocity_norm.csv')
+
     else:
-        print(f"Producing velocity heatmaps...")
+        print("Entered Velocity_Topo_Average")
         csv_files = glob.glob(f'{currdir}\\*velocity.csv')
-        scale_min = 43518.26345849037
-        scale_max = 2272431268.2241783
     
+    #create individual heatmaps
     for file in csv_files:
         df = pd.read_csv(file, header=None)
-        file_name = os.path.splitext(os.path.basename(file))[0].replace("velocity",'').replace("velocity_N",'').replace("v-avg",'')
-        num_rows = len(df)
-        num_columns = len(df.columns)
+        file_name = os.path.splitext(os.path.basename(file))[0]
+        title_name = file_name = os.path.splitext(os.path.basename(file))[0].replace('_velocity_norm','').replace('_velocity','')
 
-        x = np.array([i for i in range(num_columns)])
-        y = np.array([i for i in range(num_rows)])
+        #initialize empty 128x128 grid
         row_shape, col_shape = df.shape
         heat_data = np.zeros((row_shape, col_shape))
+        
         #retrieve data from csv
         for row_index, row in df.iterrows():
             for col_index, col in enumerate(row):
                 heat_data[row_index, col_index] = float(row[col_index])
-       
+        
+        #topo parameters
         plt.figure(figsize=(10, 8))
         heatmap = sns.heatmap(heat_data, 
                               annot=False, 
-                              cmap= "viridis", robust=True, mask=(heat_data == 0), xticklabels=False, yticklabels=False, square=True, cbar=True)
+                              cmap= "viridis", 
+                              robust=True, 
+                              mask=(heat_data == 0), 
+                              xticklabels=False, 
+                              yticklabels=False, 
+                              square=True, 
+                              cbar=True)
         heatmap.tick_params(left=False, bottom=False)
         heatmap.set_aspect('equal')
         heatmap.invert_yaxis()
-        heatmap.set_title(file_name, fontsize=18, loc="center")
-        plt.savefig(os.path.join(currdir, f'{file_name}_heatmap.png'))
+        heatmap.set_title(f'{title_name} velocity heatmap', fontsize=18, loc="center")
+        plt.savefig(os.path.join(currdir, f'{file_name}_topo.png'))
+        plt.close()
+
+    #group average csvs
+    average_csv_files = glob.glob(f'{currdir}\\*average.csv')
+
+    #create average heatmaps
+    for file in average_csv_files:
+        file_name = os.path.splitext(os.path.basename(file))[0]
+        title_name = file_name = os.path.splitext(os.path.basename(file))[0].replace('velocity_norm','').replace('velocity','')
+        
+        df = pd.read_csv(file, header=None)
+        row_shape, col_shape = df.shape
+        average_heat_data = np.zeros((row_shape, col_shape))
+       
+        #retrieve data from csv
+        for row_index, row in df.iterrows():
+            for col_index, col in enumerate(row):
+                average_heat_data[row_index, col_index] = float(row[col_index])
+
+        #topo parameters
+        plt.figure(figsize=(10, 8))
+        heatmap = sns.heatmap(heat_data, 
+                                annot=False, 
+                                cmap= "viridis", 
+                                robust=True, 
+                                mask=(average_heat_data == 0),
+                                xticklabels=False, 
+                                yticklabels=False, 
+                                square=True, 
+                                cbar=True)
+        heatmap.tick_params(left=False, bottom=False)
+        heatmap.set_aspect('equal')
+        heatmap.invert_yaxis()
+        heatmap.set_title(f'{title_name} velocity heatmap', fontsize=18, loc="center")
+
+        plt.savefig(os.path.join(currdir, f'{file_name}_topo.png'))
+        plt.close()
 
 def Num_Waves_Topo_Cumulative(currdir):
-    print(f"Graphing cumulative topo waves...")
-    wake_list = np.zeros(grid_size**2)
-    nrem_list = np.zeros(grid_size**2)
-    rem_list = np.zeros(grid_size**2)
+    print("Entered Num_Waves_Topo_Cumulative")
+
+    #initialize empty lists
+    WAKE_list = np.zeros(grid_size**2)
+    NREM_list = np.zeros(grid_size**2)
+    REM_list = np.zeros(grid_size**2)
     
     #initialize lists of channel count, per state
-    count = [[0 for _ in range(grid_size**2)] for _ in range(3)]#wake, nrem, rem
+    count = [[0 for _ in range(grid_size**2)] for _ in range(3)] #WAKE, NREM, REM
 
-    flagType = 'numwave_topo'
-    csv_files = glob.glob(f'{currdir}\\*{flagType}.csv') #maybe use a 3 pronged if statement to get rid of the need for the flagType variable
+    flagType = 'numwaves_topo'
+    csv_files = glob.glob(f'{currdir}\\*{flagType}.csv') 
     for file in csv_files:
         channel_list = np.genfromtxt(file, delimiter=',')
         channel_list = channel_list.flatten()
         file_name = os.path.splitext(os.path.basename(file))[0]
-        file_name_nolabel = file_name.replace(flagType,'')
-        file_name_nostate = file_name_nolabel.replace('WAKE','').replace('NREM','').replace('REM','')
+        
+        #add to respective state list
         for i, channel in enumerate(channel_list):
             if 'WAKE' in str(file_name):
-                wake_list[i] += channel_list[i]
+                WAKE_list[i] += channel_list[i]
                 count[0][i] += 1
             elif 'NREM' in str(file_name):
-                nrem_list[i] += channel_list[i]
+                NREM_list[i] += channel_list[i]
                 count[1][i] += 1
             elif 'REM' in str(file_name):
-                rem_list[i] += channel_list[i]
+                REM_list[i] += channel_list[i]
                 count[2][i] += 1
 
-        #create individual logic to avoid warnings, unwanted outputs, 
-        wake_list = np.divide(wake_list, count[0])
-        nrem_list = np.divide(nrem_list, count[1])
-        rem_list = np.divide(rem_list, count[2])
-        wake_grid = wake_list.reshape(-1, grid_size) 
-        nrem_grid = nrem_list.reshape(-1, grid_size)
-        rem_grid = rem_list.reshape(-1, grid_size)
+        #average by state
+        WAKE_list = np.divide(WAKE_list, count[0])
+        NREM_list = np.divide(NREM_list, count[1])
+        REM_list = np.divide(REM_list, count[2])
+        
+        #reshape to 2d
+        WAKE_grid = WAKE_list.reshape(-1, grid_size) 
+        NREM_grid = NREM_list.reshape(-1, grid_size)
+        REM_grid = REM_list.reshape(-1, grid_size)
+        
+        ####produce topo map
 
-        #csv
-        np.savetxt(f"{currdir}\\wake_numwave_topo.csv", wake_grid, delimiter=',')
-        np.savetxt(f"{currdir}\\nrem_numwave_topo.csv", nrem_grid, delimiter=',')
-        np.savetxt(f"{currdir}\\rem_numwave_topo.csv", rem_grid, delimiter=',')
+        #WAKE
+         #check if there are any non-zero values
+        if np.any(~np.isnan(WAKE_grid)):
+            #save csv
+            np.savetxt(f"{currdir}\\WAKE_numwaves_topo.csv", WAKE_grid, delimiter=',') 
+            #figure parameters
+            plt.figure(figsize=(10, 8)) 
+            heatmap = sns.heatmap(WAKE_grid, 
+                                    annot=False, 
+                                    cmap= "viridis", 
+                                    robust=True, 
+                                    xticklabels=False, 
+                                    yticklabels=False, 
+                                    square=True, 
+                                    cbar=True)
+            heatmap.tick_params(left=False, bottom=False)
+            heatmap.set_aspect('equal')
+            heatmap.invert_yaxis()
+            heatmap.set_title("WAKE state number of waves", fontsize=18, loc="center")
 
-        # heatmap
-        plt.figure(figsize=(10, 8))
-        heatmap = sns.heatmap(wake_grid, 
-                                annot=False, 
-                                cmap= "viridis", robust=True, xticklabels=False, yticklabels=False, square=True, cbar=True)
-        heatmap.tick_params(left=False, bottom=False)
-        heatmap.set_aspect('equal')
-        heatmap.invert_yaxis()
-        heatmap.set_title("Wake Topo Num Waves", fontsize=18, loc="center")
-        #plt.show()
-        #plt.savefig("D:\\Sandro_Code\\landsness_imaging\\output\\temp\\wake_numwave_topo.png")
-        plt.savefig(os.path.join(currdir, 'wake_numwave_topo.png'))
+            plt.savefig(os.path.join(currdir, 'WAKE_numwaves_topo.png'))
+            plt.close()
+
+        #NREM
+        #check if there are any non-zero values
+        if np.any(~np.isnan(NREM_grid)): 
+            #save csv
+            np.savetxt(f"{currdir}\\NREM_numwaves_topo.csv", NREM_grid, delimiter=',') 
+            #figure parameters
+            plt.figure(figsize=(10, 8))
+            heatmap = sns.heatmap(NREM_grid, 
+                                    annot=False, 
+                                    cmap= "viridis", 
+                                    robust=True, 
+                                    xticklabels=False, 
+                                    yticklabels=False, 
+                                    square=True, 
+                                    cbar=True)
+            heatmap.tick_params(left=False, bottom=False)
+            heatmap.set_aspect('equal')
+            heatmap.invert_yaxis()
+            heatmap.set_title("NREM state number of waves", fontsize=18, loc="center")
+
+            plt.savefig(os.path.join(currdir, 'NREM_numwaves_topo.png'))
+            plt.close()
+
+        #REM
+        #check if there are any non-zero values
+        if np.any(~np.isnan(REM_grid)): 
+            #save csv
+            np.savetxt(f"{currdir}\\NREM_numwaves_topo.csv", REM_grid, delimiter=',') 
+            #figure paramters
+            plt.figure(figsize=(10, 8))
+            heatmap = sns.heatmap(REM_grid, 
+                                    annot=False, 
+                                    cmap= "viridis",
+                                    robust=True, 
+                                    xticklabels=False, 
+                                    yticklabels=False, 
+                                    square=True, 
+                                    cbar=True)
+            heatmap.tick_params(left=False, bottom=False)
+            heatmap.set_aspect('equal')
+            heatmap.invert_yaxis()
+            heatmap.set_title("REM state number of waves", fontsize=18, loc="center")
+
+            plt.savefig(os.path.join(currdir, 'REM_numwaves_topo.png'))
+            plt.close()
+
+def Freq_Waves_Comp(currdir):
+    print("Entered Freq_Waves_Comp")
+    dict = {}
+    flagType = '_freqwaves'
+    csv_files = glob.glob(f'{currdir}\\*{flagType}.csv')
+    for file in csv_files:
+        file_name = os.path.splitext(os.path.basename(file))[0]
+        file_name_nonum = file_name.replace(flagType,'')
+        file_name_nostate = file_name_nonum.replace('WAKE','').replace('NREM','').replace('REM','')
+        
+    #read and store data by state
+        with open(os.path.join(currdir, f'{file_name}.csv'), 'r') as f:
+            csv_reader = csv.reader(f)
+            state_data = next(csv_reader)
+        if file_name_nostate not in dict:
+            dict[file_name_nostate] = [0,0,0]
+        if 'WAKE' in str(file_name):
+            dict[file_name_nostate][0] = float(state_data[0])
+        elif 'NREM' in str(file_name):
+            dict[file_name_nostate][1] = float(state_data[0])
+        elif 'REM' in str(file_name):
+            dict[file_name_nostate][2] = float(state_data[0])
+    #save to csv
+    df = pd.DataFrame.from_dict(dict, orient='index', columns=states)
+    df.to_csv(os.path.join(currdir, 'freqwaves_comp.csv'), index = True, mode='w+')
+    
+#####individual bar graphs
+    for mouse in dict.keys():
+        x = df.loc[mouse]
+        plt.bar(states,x, color = ['#FF6347', '#4682B4', '#32CD32'])
+        #labels
+        plt.ylabel('Wave Frequency')
+        plt.xlabel('State')
+        plt.title(f'{mouse} wave frequency')
+        #appearance
+        plt.tight_layout()
+        plt.gca().spines['top'].set_visible(False)
+        plt.gca().spines['right'].set_visible(False)
+       
+        plt.savefig(os.path.join(currdir, f'{mouse}_freqwaves.png'))
         plt.close()
+    plt.clf()
+    
+#####line plot
+    for mouse in dict.keys():
+        x = df.loc[mouse]
+        x_masked = np.where(x == 0, np.nan, x)
+        plt.plot(states, x_masked, label=mouse, marker='o', linewidth=2)
+    #labels
+    plt.legend(loc='upper left', bbox_to_anchor=(1.05, 1), fontsize='small')
+    plt.title('Wave frequency across states')
+    plt.ylabel('Wave Frequency')
+    plt.xlabel('State')
+    #appearance
+    plt.tight_layout()
+    plt.gca().spines['top'].set_visible(False)
+    plt.gca().spines['right'].set_visible(False)
+    
+    plt.savefig(os.path.join(currdir, 'freqwaves_comp.png'))
+    plt.close()
+    plt.clf()
 
-        plt.figure(figsize=(10, 8))
-        heatmap = sns.heatmap(nrem_grid, 
-                                annot=False, 
-                                cmap= "viridis", robust=True, xticklabels=False, yticklabels=False, square=True, cbar=True)
-        heatmap.tick_params(left=False, bottom=False)
-        heatmap.set_aspect('equal')
-        heatmap.invert_yaxis()
-        heatmap.set_title("NREM Topo Num Waves", fontsize=18, loc="center")
-        #plt.savefig("D:\\Sandro_Code\\landsness_imaging\\output\\temp\\nrem_numwave_topo.png")
-        plt.savefig(os.path.join(currdir, 'nrem_numwave_topo.png'))
-        plt.close()
+#####total waves per state bar graph
+    df_total = df.sum(axis = 0) #sum up rows of table
+    x = df_total
+    plt.bar(states,x, color = ['#FF6347', '#4682B4', '#32CD32'])
+    #labels
+    plt.title('Total wave frequency')
+    plt.ylabel('Wave Frequency')
+    plt.xlabel('State')
+    #appearance
+    plt.tight_layout()
+    plt.gca().spines['top'].set_visible(False)
+    plt.gca().spines['right'].set_visible(False)
+    
+    plt.savefig(os.path.join(currdir, 'freqwaves_total.png'))
+    plt.close()
+    plt.clf()
 
-        plt.figure(figsize=(10, 8))
-        heatmap = sns.heatmap(rem_grid, 
-                                annot=False, 
-                                cmap= "viridis", robust=True, xticklabels=False, yticklabels=False, square=True, cbar=True)
-        heatmap.tick_params(left=False, bottom=False)
-        heatmap.set_aspect('equal')
-        heatmap.invert_yaxis()
-        heatmap.set_title("REM Topo Num Waves", fontsize=18, loc="center")
-        #plt.savefig("D:\\Sandro_Code\\landsness_imaging\\output\\temp\\rem_numwave_topo.png")
-        plt.savefig(os.path.join(currdir, 'rem_numwave_topo.png'))
-        plt.close()
+def Freq_Waves_Topo_Cumulative(currdir):
+    print("Entered Freq_Waves_Topo_Cumulative")
+    WAKE_list = np.zeros(grid_size**2)
+    NREM_list = np.zeros(grid_size**2)
+    REM_list = np.zeros(grid_size**2)
+    
+    #initialize lists of channel count, per state
+    count = [[0 for _ in range(grid_size**2)] for _ in range(3)]#WAKE, NREM, REM
+
+    flagType = 'freqwaves_topo'
+    csv_files = glob.glob(f'{currdir}\\*{flagType}.csv')
+    for file in csv_files:
+        channel_list = np.genfromtxt(file, delimiter=',')
+        channel_list = channel_list.flatten()
+        file_name = os.path.splitext(os.path.basename(file))[0]
+        
+        #add to respective state list
+        for i, channel in enumerate(channel_list):
+            if 'WAKE' in str(file_name):
+                WAKE_list[i] += channel_list[i]
+                count[0][i] += 1
+            elif 'NREM' in str(file_name):
+                NREM_list[i] += channel_list[i]
+                count[1][i] += 1
+            elif 'REM' in str(file_name):
+                REM_list[i] += channel_list[i]
+                count[2][i] += 1
+
+        #average by state
+        WAKE_list = np.divide(WAKE_list, count[0])
+        NREM_list = np.divide(NREM_list, count[1])
+        REM_list = np.divide(REM_list, count[2])
+        #reshape to 2d
+        WAKE_grid = WAKE_list.reshape(-1, grid_size) 
+        NREM_grid = NREM_list.reshape(-1, grid_size)
+        REM_grid = REM_list.reshape(-1, grid_size)
+        
+        ####produce topo map
+
+        #WAKE
+        #check if there are any non-zero values
+        if np.any(~np.isnan(WAKE_grid)):
+            #save csv
+            np.savetxt(f"{currdir}\\WAKE_freqwaves_topo.csv", WAKE_grid, delimiter=',') 
+            #figure parameters
+            plt.figure(figsize=(10, 8)) 
+            heatmap = sns.heatmap(WAKE_grid, 
+                                    annot=False, 
+                                    cmap= "viridis", 
+                                    robust=True, 
+                                    xticklabels=False, 
+                                    yticklabels=False, 
+                                    square=True, 
+                                    cbar=True)
+            heatmap.tick_params(left=False, bottom=False)
+            heatmap.set_aspect('equal')
+            heatmap.invert_yaxis()
+            heatmap.set_title("WAKE state wave frequency", fontsize=18, loc="center")
+
+            plt.savefig(os.path.join(currdir, 'WAKE_freqwaves_topo.png'))
+            plt.close()
+
+        #NREM
+        #check if there are any non-zero values
+        if np.any(~np.isnan(NREM_grid)):
+            #save csv
+            np.savetxt(f"{currdir}\\NREM_freqwaves_topo.csv", NREM_grid, delimiter=',') 
+            #figure parameters
+            plt.figure(figsize=(10, 8))
+            heatmap = sns.heatmap(NREM_grid, 
+                                    annot=False, 
+                                    cmap= "viridis", 
+                                    robust=True, 
+                                    xticklabels=False, 
+                                    yticklabels=False, 
+                                    square=True, 
+                                    cbar=True)
+            heatmap.tick_params(left=False, bottom=False)
+            heatmap.set_aspect('equal')
+            heatmap.invert_yaxis()
+            heatmap.set_title("NREM state wave frequency ", fontsize=18, loc="center")
+
+            plt.savefig(os.path.join(currdir, 'NREM_freqwaves_topo.png'))
+            plt.close()
+######FIX
+        #REM
+        #check if there are any non-zero values
+        if np.any(~np.isnan(REM_grid)):
+            #save csv
+            np.savetxt(f"{currdir}\\REM_freqwaves_topo.csv", REM_grid, delimiter=',') 
+            #figure paramters
+            plt.figure(figsize=(10, 8))
+            heatmap = sns.heatmap(REM_grid, 
+                                    annot=False, 
+                                    cmap= "viridis",
+                                    robust=True, 
+                                    xticklabels=False, 
+                                    yticklabels=False, 
+                                    square=True, 
+                                    cbar=True)
+            heatmap.tick_params(left=False, bottom=False)
+            heatmap.set_aspect('equal')
+            heatmap.invert_yaxis()
+            heatmap.set_title("REM state wave frequency", fontsize=18, loc="center")
+
+            plt.savefig(os.path.join(currdir, 'REM_freqwaves_topo.png'))
+            plt.close()
 
 def run(data_path, args, data, currdir):
-    Avg_Polar(data_path, args, data, currdir) #averge polar histogram across all mice
+    #average polar histogram across all mice
+    Avg_Polar(data_path, args, data, currdir) 
     if args.norm:
-        Normalize(args, currdir)
+        Normalize(currdir)
     if args.avg:
         Average_CSVs(args, currdir)
     if args.v:
-        Velocity_Violin(currdir, args.norm, args.avg) 
+        Velocity_Violin(args, currdir) 
     if args.p:
         Planarity_Comp(currdir)
-    if args.num:
-        Num_Waves_Comp(currdir) #number of waves per state per mice
-    Velocity_Topo_Average(currdir, args.norm, args.avg) #was previously in Heat_Mapper(currdir, args.norm, args.avg)
+    #number of waves per state per mouse
+    Num_Waves_Comp(currdir) 
     Num_Waves_Topo_Cumulative(currdir)
+    if args.freq:
+        #number of waves per recording length per state per mice
+        Freq_Waves_Comp(currdir)
+        Freq_Waves_Topo_Cumulative(currdir)
+
+    Velocity_Topo_Average(args, currdir) 
