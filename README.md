@@ -71,6 +71,7 @@ For example, to run `run_script.py`:
 python run_script.py
 ```
 Using Tkinter, you will be able to select the directory in which the data/files/inputs to analyze are located. An example of this window is provided below
+
 <img width="500" alt="Screenshot 2024-04-16 at 2 42 48 PM" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/08779985-e5f3-4212-9b30-f53e31c211fe">
 
 ## Outputs
