@@ -18,25 +18,25 @@ Our visualization tool is designed to complement and collaborate with COBRAWAP, 
 Key features of our collaborative visualization solution include:
 
 1. Polar Histograms: Gain insights into the directional properties of cortical waves by visualizing their propagation directions, facilitating the identification of dominant propagation patterns.
-  <img width="500" alt="Polar Histogram Example" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/bdd9c214-74f8-4396-bd93-9af27e0fec8f">
+  <img width="500" alt="Polar Histogram Example" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/c4412ac1-c14c-4b02-b17a-640f313fef7f">
 
 2. Velocity Heatmaps: Explore the spatial distribution of wave velocities across the imaging field, revealing regions with distinct wave propagation speeds and potential correlations with underlying cortical structures.
-    <img width="500" alt="Velocity Heatmap Example" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/972b635a-b196-43ea-8e36-2a8739e6bcdf">
+  <img width="500" alt="Velocity Heatmap Example" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/972b635a-b196-43ea-8e36-2a8739e6bcdf">
 
 3. Planarity Visualizations: Assess the planarity (cortical vs. subcortical) of the waves through intuitive visualizations that highlight deviations from planarity.
 
-   <img width="500" alt="Planarity Example" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/c5f9964e-d180-47c4-836e-f0016a27514f">
+  <img width="500" alt="Planarity Example" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/c5f9964e-d180-47c4-836e-f0016a27514f">
 
 4. Wave Frequency: Analyze the number of waves per unit of time distribution of cortical waves, revealing patterns of activity across different regions.
 
-  <img width="500" alt="Wave Incidents" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/eda3feef-9b72-4993-b0e5-f37fbc2e1e2c">
+  <img width="500" alt="Wave Frequency Example" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/1b72e2ac-fef0-4c58-a3cd-07d1767e2c8c">
 
 
 
 5. FOR THE FUTURE: Locality Index to access local vs global waves
 
 
-Together, COBRAWAP and our visualization tool form a comprehensive and accessible platform for cortical wave research, fostering interdisciplinary collaboration, knowledge sharing, and ultimately driving scientific progress in this field.
+Together, COBRAWAP and SWAVE form a comprehensive and accessible platform for cortical wave research, fostering interdisciplinary collaboration, knowledge sharing, and ultimately driving scientific progress in this field.
 
 ## Installation/Set-up
 Before using our visualization tool, ensure that you have set up and run the COBRAWAP pipeline to process your data. Follow the installation and usage instructions provided in the [COBRAWAP](https://cobrawap.readthedocs.io/en/latest/pipeline.html) documentation to analyze your data and generate the necessary output files and file structure.
