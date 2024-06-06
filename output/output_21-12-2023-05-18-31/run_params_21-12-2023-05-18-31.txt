@@ -1,4 +1,0 @@
---f SLEEP_L1_NREM_54 --norm
---f SLEEP_L1_REM_54 --norm
---f SLEEP_L1_WAKE_54 --norm
---f CUMULATIVE --norm --avg --v --n 1 --p --num
