@@ -1,5 +1,4 @@
-# SWAVE
-Sleep Wave Analysis Visualization Engine
+# Sleep Wave Analysis Visualization Engine (SWAVE)
 
 ## Description
 Examining the Sleep Slow Wave changes propagating across the cortex. Visualize wave characteristics comparing/contrasing 3 behavioral states: Wake(W), NREM (NR), REM (R). This is a data visualization tool that takes processed data from the  [COBRAWAP](https://github.com/NeuralEnsemble/cobrawap) pipeline and returns measures to graph the dynamic wave-like activity patterens found in the data. 
