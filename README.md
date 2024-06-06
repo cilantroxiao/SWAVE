@@ -7,7 +7,7 @@ Examining the Sleep Slow Wave changes propagating across the cortex. Visualize w
 [Documentation](https://github.com/cilantroxiao/landsness_imaging/blob/aly_code/documentation.md)
 
 
-## Context/Justification/Content
+## Context
 ![image](https://github.com/cilantroxiao/landsness_imaging/assets/79768734/ac2bddd8-be7e-4c60-9b1d-e136ead08ff6)
 
 For researchers studying cortical wave-like activity and Peak/Trough state dynamics, effectively visualizing and interpreting the complex analysis results is crucial for gaining meaningful insights. While COBRAWAP provides a powerful and modular pipeline for analyzing wide-field calcium imaging data, seamless integration with intuitive visualization tools can further enhance the accessibility and interpretability of the analysis outcomes.
