@@ -10,11 +10,11 @@ Examining the Sleep Slow Wave changes propagating across the cortex. Visualize w
 ## Context
 ![image](https://github.com/cilantroxiao/landsness_imaging/assets/79768734/ac2bddd8-be7e-4c60-9b1d-e136ead08ff6)
 
-For researchers studying cortical wave-like activity and Peak/Trough state dynamics, effectively visualizing and interpreting the complex analysis results is crucial for gaining meaningful insights. While COBRAWAP provides a powerful and modular pipeline for analyzing wide-field calcium imaging data, seamless integration with intuitive visualization tools can further enhance the accessibility and interpretability of the analysis outcomes.
+For researchers studying cortical wave-like activity and Peak/Trough state dynamics, effectively visualizing and interpreting the complex analysis results is crucial for gaining meaningful insights. While COBRAWAP provides a powerful and modular pipeline for analyzing wide-field calcium imaging data, seamless integration with intuitive visualization tools can enhance the accessibility and interpretability of the analysis outcomes.
 
-Our visualization tool is designed to complement and collaborate with COBRAWAP, forming a unified and user-friendly platform for comprehensive cortical wave analysis. By seamlessly integrating with COBRAWAP's outputs, our tool bridges the gap between raw analysis results and their effective interpretation, empowering researchers with both programming and non-programming backgrounds to explore and understand the intricate dynamics of cortical wave activity and Peak/Trough state detections.
+Our visualization tool is designed to complement and collaborate with COBRAWAP, forming a unified and user-friendly platform for comprehensive cortical wave analysis. By integrating with COBRAWAP's outputs, our tool bridges the gap between raw analysis results and their effective interpretation, empowering researchers with both programming and non-programming backgrounds to explore and understand the dynamics of cortical wave activity and Peak/Trough state detections.
 
-Key features of our collaborative visualization solution include:
+Key features of our visualization solution include:
 
 1. Polar Histograms: Gain insights into the directional properties of cortical waves by visualizing their propagation directions, facilitating the identification of dominant propagation patterns.
   <img width="500" alt="Polar Histogram Example" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/c4412ac1-c14c-4b02-b17a-640f313fef7f">
