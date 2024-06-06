@@ -74,7 +74,7 @@ Using Tkinter, you will be able to select the directory in which the data/files/
 <img width="500" alt="Screenshot 2024-04-16 at 2 42 48 PM" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/08779985-e5f3-4212-9b30-f53e31c211fe">
 
 ## Outputs
-For each iteration, a timestamped folder will be created including a text file with parameters and the corresponding visuals
+For each iteration, a timestamped folder will be created including a text file with parameters and the corresponding visuals. Click [here](https://github.com/cilantroxiao/landsness_imaging/tree/aly_code/output/output_04-06-2024-18-52-14) to see an example output folder
 
 <img width="500" alt="Screenshot 2024-04-16 at 3 00 53 PM" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/81ce3387-298a-4ed5-88c0-c837730f3b70">
 
