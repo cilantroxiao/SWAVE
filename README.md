@@ -54,9 +54,10 @@ An example of how input.txt could look:
 
 ```python
 #filename:wave_ids
---s 'NREM REM'
---f '_Mice_Name_NREM' --freq #Be sure that you have included the state within the filename
---f '_Mice_Name_REM':1-30, 52, 54 --freq
+--s 'NREM REM KX' # Expecting to see two states, for example NREM and REM within the inputs
+--f '_Mice_Name_KX' # The 'KX' is denoting which state this input belongs to
+--f '_Mice_Name_NREM' --freq # This runs all waves for the entire input
+--f '_Mice_Name_REM':1-30, 52, 54 --freq # This runs for waves: 1-30, 52, 54
 --f CUMULATIVE --avg --v --freq --p --norm --n 1 #This line specifies flags to run Step2.py.
 ```
 
