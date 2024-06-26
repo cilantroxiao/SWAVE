@@ -14,6 +14,7 @@ def create_parser():
         prog='Title2',
         description='Description2',
         epilog='Hope this works2')
+    parser.add_argument('--s', nargs='+', help='list of states')
     parser.add_argument('--f', help='input filenames and associated wavefronts')
     parser.add_argument('--norm', action='store_true', help='normalize data?')
     parser.add_argument('--avg', action='store_true', help='avg data at end?')
@@ -66,6 +67,37 @@ input_path = '.\\input.txt' #modify this
 output_path = '.\\output' #modify this
 data = []
 
+def process_input_file(file_path):
+    state_files_dict = {}
+    states = []
+
+    # Read the input file line by line
+    with open(file_path, 'r') as file:
+        for line in file:
+            line = line.strip()
+
+            # Check if the line starts with --s
+            if line.startswith('--s'):
+                states = line.split()[1:]
+                for state in states:
+                    state_files_dict[state] = []
+            # Check if last line has been reached in input.txt
+            elif '--f CUMULATIVE' in line:
+                break
+            # Check if the line starts with --f
+            elif '--f' in line:
+                filename = line.split()[1]
+                parts = line.split("_")
+                # Check each state and add the filename to the corresponding list
+                for i in range(len(parts)):
+                    for state in states:
+                        if state.lower() == parts[i].lower():
+                            state_files_dict[state].append(filename)
+
+    return state_files_dict
+
+state_files = process_input_file(input_path)
+
 parser = create_parser()
 outdir, timestamp = create_new_directory(output_path)
 currdir = f'{output_path}\\{outdir}'
@@ -75,13 +107,14 @@ with open(input_path, 'r') as f:
         f_copy.write(contents)
         f_copy.close()
     f.seek(0)
-    tail =  f.readlines()[-1].strip()
-    f.seek(0)
+    next(f)
     for line in f:
         args = parser.parse_args(line.split())
         if "CUMULATIVE" in line.strip():
-            step2.run(data_path, args, data, currdir)
+            step2.run(data_path, args, data, currdir, state_files)
             break
-        filename, wave_ids = parse_waves(args)
-        data.append({'filename': filename, 'wave_ids': wave_ids})
-        step1.run(data_path, filename, wave_ids, args, currdir)
+        if args.f:
+            filename, wave_ids = parse_waves(args)
+            if filename:
+                data.append({'filename': filename, 'wave_ids': wave_ids})
+                step1.run(data_path, filename, wave_ids, args, currdir)

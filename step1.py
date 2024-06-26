@@ -2,12 +2,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
-
-from difflib import SequenceMatcher
-import glob
 import csv
 import os
-import warnings
 import seaborn as sns
 grid_size = 128
 
@@ -73,7 +69,7 @@ def Polar_Histogram(path_head, filename, wave_ids, currdir):
                                         np.average(avg_x_normalized))
 
     # Create a polar histogram each method
-    fig, (ax1, ax2) = plt.subplots(1,3, subplot_kw={'projection': 'polar'})
+    fig, (ax1, ax2) = plt.subplots(1,2, subplot_kw={'projection': 'polar'})
 
     ax1.hist(angles_norm, bins=36, range=(-np.pi, np.pi), density=True)
     ax1.set_title('All waves have equal weight')
