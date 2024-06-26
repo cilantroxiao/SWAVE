@@ -42,7 +42,7 @@ Before using our visualization tool, ensure that you have set up and run the COB
 
 To run our tool, you'll need the following packages. Refer to these detailed instructions to [install](https://github.com/cilantroxiao/landsness_imaging/blob/aly_code/installation-setup.md#prerequisites) them: 
 
-- pandas, matplotlib, numpy, pathlib, glob, csv, os, argparse, difflib, scipy, seaborn
+- pandas, matplotlib, numpy, pathlib, glob, csv, os, argparse, difflib, scipy, seaborn, tkinter, time
 
 ## How to run your code
 
