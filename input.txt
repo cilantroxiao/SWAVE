@@ -1,4 +1,5 @@
-SLEEP_L1_NREM_54:1-30,32 --out .\\output --norm
-SLEEP_L1_REM_54:1-30,32 --out .\\output --norm
-SLEEP_L1_WAKE_54:1-30,32 --out .\\output --norm
---norm --out .\\output --avg --v --n 1 --p --num
+--s NREM REM KX
+--f SLEEP_119_2_NREM_54 --freq
+--f SLEEP_119_2_REM_54 --freq
+--f ANESTH_EricMs1Ket_KX_16 --freq
+--f CUMULATIVE --avg --v --freq --p --norm --n 2

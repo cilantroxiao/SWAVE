@@ -1,170 +1,87 @@
-# Landsness Imaging COBRAWAP Project
+# Sleep Wave Analysis Visualization Engine (SWAVE)
+  <img height = "200px" alt="SWAVE LOGO" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/9e997304-4554-45a7-b997-3b08a8dfebbd">
 
-This code uses the [COBRAWAP](https://cobrawap.readthedocs.io/en/latest/) pipeline to track slow waves propagating across the cortex. Calculate and visualize wave characteristics comparing/contrasing 4 behavioral states: Wake(W), NREM (NR), REM (R).
+## Description
+Examining the Sleep Slow Wave changes propagating across the cortex. Initially developed to visualize wave characteristics across three behavioral states—Wake (W), NREM (NR), and REM (R)—SWAVE now supports the implementation of additional 'N' states. This is a data visualization tool that takes processed data from the  [COBRAWAP](https://github.com/NeuralEnsemble/cobrawap) pipeline and returns measures to graph the dynamic wave-like activity patterens found in the data. 
 
-# Instructions
+## Documentation
+[Documentation](https://github.com/cilantroxiao/landsness_imaging/blob/aly_code/documentation.md)
 
-First, clone the repo or download the files. If you need to set up your Python environment, go to the section titled "Setting up Python Environment".
 
-# Inputs
-## input.txt
+## Context
+![image](https://github.com/cilantroxiao/landsness_imaging/assets/79768734/ac2bddd8-be7e-4c60-9b1d-e136ead08ff6)
 
-The input text file contains a series of command lines. Each command line specifies the execution of Python scripts with certain arguments. The flags are as follows:
+For researchers studying cortical wave-like activity and Peak/Trough state dynamics, effectively visualizing and interpreting the complex analysis results is crucial for gaining meaningful insights. While COBRAWAP provides a powerful and modular pipeline for analyzing wide-field calcium imaging data, seamless integration with intuitive visualization tools can enhance the accessibility and interpretability of the analysis outcomes.
 
-  * --norm: Specifies normalization of data.
-  * --out 'directory'/'folder': Specifies the output directory or folder.
-  * --avg: Specifies average after data has been processed.
-  * --v: Specifies violin plot of velocities.
-  * --n 'num': Specifies number of Mice 
-  * --p: Specifies planarity
-  * --num: Specifies number of waves.
+Our visualization tool is designed to complement and collaborate with COBRAWAP, forming a unified and user-friendly platform for comprehensive cortical wave analysis. By integrating with COBRAWAP's outputs, our tool bridges the gap between raw analysis results and their effective interpretation, empowering researchers with both programming and non-programming backgrounds to explore and understand the dynamics of cortical wave activity and Peak/Trough state detections.
+
+Key features of our visualization solution include:
+
+1. Polar Histograms: Gain insights into the directional properties of cortical waves by visualizing their propagation directions, facilitating the identification of dominant propagation patterns.
+  <img width="500" alt="Polar Histogram Example" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/c4412ac1-c14c-4b02-b17a-640f313fef7f">
+
+2. Velocity Heatmaps: Explore the spatial distribution of wave velocities across the imaging field, revealing regions with distinct wave propagation speeds and potential correlations with underlying cortical structures.
+  <img width="500" alt="Velocity Heatmap Example" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/972b635a-b196-43ea-8e36-2a8739e6bcdf">
+
+3. Planarity Visualizations: Assess the planarity (cortical vs. subcortical) of the waves through intuitive visualizations that highlight deviations from planarity.
+
+  <img width="500" alt="Planarity Example" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/c5f9964e-d180-47c4-836e-f0016a27514f">
+
+4. Wave Frequency: Analyze the number of waves per unit of time distribution of cortical waves, revealing patterns of activity across different regions.
+
+  <img width="500" alt="Wave Frequency Example" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/1b72e2ac-fef0-4c58-a3cd-07d1767e2c8c">
+
+
+
+5. FOR THE FUTURE: Locality Index to access local vs global waves
+
+
+Together, COBRAWAP and SWAVE form a comprehensive and accessible platform for cortical wave research, fostering interdisciplinary collaboration, knowledge sharing, and ultimately driving scientific progress in this field.
+
+## Installation/Set-up
+Before using our visualization tool, ensure that you have set up and run the COBRAWAP pipeline to process your data. Follow the installation and usage instructions provided in the [COBRAWAP](https://cobrawap.readthedocs.io/en/latest/pipeline.html) documentation to analyze your data and generate the necessary output files and file structure.
+
+To run our tool, you'll need the following packages. Refer to these detailed instructions to [install](https://github.com/cilantroxiao/landsness_imaging/blob/aly_code/installation-setup.md#prerequisites) them: 
+
+- pandas, matplotlib, numpy, pathlib, glob, csv, os, argparse, difflib, scipy, seaborn, tkinter, time
+
+## How to run your code
+
+### input.txt
+
+The input text file serves as a set of instructions for the visualization. Please refer to the [documentation](https://github.com/cilantroxiao/landsness_imaging/blob/aly_code/documentation.md#inputtxt) for more information.
   
-Here's an example below of how your input.txt should look:
-Format should be "Filename:wave_ids" or "Directory:wave_ids". If you want all wave_ids analyzed then just include the "filename".
+An example of how input.txt could look:
 
 ```python
-#filename:wave_ids --out .\\output --norm
-SLEEP_L1_REM_54 --out .\\output --norm
-SLEEP_L1_WAKE_54:1-30,32,34-50 --out .\\output --norm
---norm --out .\\output --avg --v --n 1 --p --num #This line specifies flags to run Step2.py.
+#filename:wave_ids
+--s 'NREM REM KX' # Expecting to see two states, for example NREM and REM within the inputs
+--f '_Mice_Name_KX' # The 'KX' is denoting which state this input belongs to
+--f '_Mice_Name_NREM' --freq # This runs all waves for the entire input
+--f '_Mice_Name_REM':1-30, 52, 54 --freq # This runs for waves: 1-30, 52, 54
+--f CUMULATIVE --avg --v --freq --p --norm --n 1 #This line specifies flags to run Step2.py.
 ```
 
-## run_script.py
-
-This Python script reads commands from an input text file and executes them. The input file is specified using the 'input_path' variable. Each line in the input file corresponds to a command that is executed by invoking Python scripts named "step1.py." After processing all commands, the script runs "step2.py" with the last command from the input file.
-
-# Non-Helper Functions:
-## Step 1:
-### `create_parser()`
-This function sets up an ArgumentParser for command-line argument parsing. It defines and handles command-line arguments, such as input file, output directory, and normalization flag, to control the program's behavior.
-
-### `parse_waves()`
-This function extracts the filename and wave IDs from the user-provided input. It handles cases where the input is in the format of 'filename:wave_ids' and determines the range of wave IDs to consider.
-
-### `Polar_Histogram(filename, wave_ids)`
-Generates polar histograms based on the provided `filename` and wave IDs. It processes and normalizes data from CSV files, calculating the weighted average angle for each dataset and creating polar histograms for visualization.
-
-### `Individual_CSVs(filename, wave_ids)`
-Creates CSV files containing velocity data based on the specified `filename` and wave IDs. It accumulates and averages velocity data and saves the results in CSV format.
-
-### `Heat_Mapper(norm, avg)`
-Generates heatmaps based on the program's configuration. It can produce velocity heatmaps, normalized heatmaps, or average heatmaps, depending on the arguments provided.
-
-## Step 2:
-### `create_parser()`
-This function sets up an ArgumentParser for command-line argument parsing. It defines and handles command-line arguments, such as input file, output directory, and normalization flag, to control the program's behavior.
-
-### `Velocity_Violin()`
-This function generates violin plots of velocity data extracted from CSV files. It processes multiple CSV files and visualizes the velocity distribution.
-
-### `Normalize()`
-This function normalizes CSV data, specifically related to velocity. It processes CSV files and normalizes the data within those files.
-
-### `Average_CSVs()`
-This function computes average values from CSV files, especially relevant for velocity data. It divides the data by the number of files and stores the resulting averages in new CSV files.
-
-### `Avg_Planarity()`
-This function calculates and graphs the average planarity across different states such as WAKE, NREM, and REM. It produces individual bar graphs, line plots, and a summary comparison graph.
-
-### `Num_Waves()`
-This function calculates and graphs the number of waves for each state, including WAKE, NREM, and REM. It produces individual bar graphs, a line plot, and a total bar graph for comparison.
-
-
-
-# Helper Functions:
-## Step 1:
-### `add(list, row, column, df)`
-A helper function that adds values from multiple DataFrames, specified by a list, into a target DataFrame (`df`) at a given row and column index.
-
-### `divide(df, size)`
-This function normalizes the values in a DataFrame (`df`) by dividing each element by a specified `size` value. It is used for normalizing the data.
-
-### `similar(a, b)`
-This method checks the similarity between two strings (`a` and `b`) by comparing and removing certain substrings, specifically the elements in the `states` list. It uses the `SequenceMatcher` to calculate the similarity ratio.
-
-
-# Instructions
-
-
-# Setting up the Development Environment
-
-## 1. Install Visual Studio Code (VSCode)
-
-Visual Studio Code is a popular code editor that provides a great environment for Python development. You can download and install VSCode from the official website: [Visual Studio Code](https://code.visualstudio.com/).
-
-After the installation, launch VSCode.
-
-## 2. Python Installation
-
-To use Python with VSCode, you need to have Python installed. Follow these steps to install Python:
-
-- Download Python from the official website: [Python Downloads](https://www.python.org/downloads/).
-- Choose the version of Python that you want to install (e.g., Python 3.8 or Python 3.9).
-- During installation, make sure to check the option that says "Add Python to PATH." This allows you to run Python from the command line.
-
-To verify that Python is installed correctly, open the command prompt or terminal and run the following command:
-
-```bash
-python --version
-```
-
-This should display the version of Python you installed (e.g., Python 3.8.10).
-
-## 3. Install Visual Studio Code Extensions
-
-VSCode supports extensions that enhance your development environment. For Python development, install the "Python" extension:
-
-- Open VSCode.
-- Go to the Extensions view by clicking on the Extensions icon in the Activity Bar on the side of the window (or use the keyboard shortcut `Ctrl+Shift+X`).
-- Search for "Python" in the Extensions view.
-- Click the "Install" button for the official "Python" extension by Microsoft.
-
-This extension provides features like code linting, debugging, and code completion for Python.
-
-## 4. Open Your Code
-
-Open your Python code project in VSCode:
-
-- Click on "File" in the menu.
-- Select "Open Folder" and navigate to the directory where your code is located.
-- Click "Open."
-
-You can now start working with your code in VSCode.
-
-# Dependencies
-
-The code **requires** the following Python libraries. Install them using [pip](https://pip.pypa.io/en/stable/getting-started/)
-
-```bash
-python -m pip install pandas
-```
-
-```bash
-python -m pip install matplotlib
-```
-
-```bash
-python -m pip install pathlib
-```
-
-```bash
-python -m pip install scipy
-```
-
-```bash
-python -m pip install seaborn
-```
-
-
-# Running Your Code
-
-- Open the integrated terminal in VSCode by clicking on "View" in the menu and selecting "Terminal."
-- Navigate to the directory where your code is located using the `cd` command.
-- Run your code using the appropriate Python command, providing the script name as an argument.
+### Running your Code
+1. Open your terminal or command prompt.
+2. Navigate to the directory where your code is located using the `cd` command.
+3. Run the script/tool using the appropriate command, providing the necessary arguments if any.
 
 For example, to run `run_script.py`:
 
 ```bash
 python run_script.py
 ```
+Using Tkinter, you will be able to select the directory in which the data/files/inputs to analyze are located. An example of this window is provided below
+
+<img width="500" alt="Screenshot 2024-04-16 at 2 42 48 PM" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/08779985-e5f3-4212-9b30-f53e31c211fe">
+
+## Outputs
+For each iteration, a timestamped folder will be created including a text file with parameters and the corresponding visuals. Click [here](https://github.com/cilantroxiao/landsness_imaging/tree/aly_code/output/output_04-06-2024-18-52-14) to see an example output folder
+
+<img width="500" alt="Screenshot 2024-04-16 at 3 00 53 PM" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/81ce3387-298a-4ed5-88c0-c837730f3b70">
+
+
+## Liscenses / Legal
+
 
