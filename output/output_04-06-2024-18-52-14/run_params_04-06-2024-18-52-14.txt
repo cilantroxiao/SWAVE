@@ -1,0 +1,16 @@
+--f SLEEP_119_2_NREM_54 --freq
+--f SLEEP_132_1_NREM_54 --freq
+--f SLEEP_L1_NREM_54 --freq
+--f SLEEP_E2_NREM_54 --freq
+--f SLEEP_L3_NREM_54 --freq
+--f SLEEP_119_2_REM_54 --freq
+--f SLEEP_132_1_REM_54 --freq
+--f SLEEP_L1_REM_54 --freq
+--f SLEEP_E2_REM_54 --freq
+--f SLEEP_L3_REM_54 --freq
+--f SLEEP_119_2_WAKE_54 --freq
+--f SLEEP_132_1_WAKE_54 --freq
+--f SLEEP_L1_WAKE_54 --freq
+--f SLEEP_E2_WAKE_54 --freq
+--f SLEEP_L3_WAKE_54 --freq
+--f CUMULATIVE --avg --v --freq --p --norm --n 15
