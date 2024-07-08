@@ -5,7 +5,7 @@
 Examining the Sleep Slow Wave changes propagating across the cortex. Initially developed to visualize wave characteristics across three behavioral states—Wake (W), NREM (NR), and REM (R)—SWAVE now supports the implementation of additional 'N' states. This is a data visualization tool that takes processed data from the  [COBRAWAP](https://github.com/NeuralEnsemble/cobrawap) pipeline and returns measures to graph the dynamic wave-like activity patterens found in the data. 
 
 ## Documentation
-[Documentation](https://github.com/cilantroxiao/landsness_imaging/blob/aly_code/documentation.md)
+[Documentation](https://github.com/cilantroxiao/SWAVE/blob/main/documentation.md)
 
 
 ## Context
@@ -41,7 +41,7 @@ Together, COBRAWAP and SWAVE form a comprehensive and accessible platform for co
 ## Installation/Set-up
 Before using our visualization tool, ensure that you have set up and run the COBRAWAP pipeline to process your data. Follow the installation and usage instructions provided in the [COBRAWAP](https://cobrawap.readthedocs.io/en/latest/pipeline.html) documentation to analyze your data and generate the necessary output files and file structure.
 
-To run our tool, you'll need the following packages. Refer to these detailed instructions to [install](https://github.com/cilantroxiao/landsness_imaging/blob/aly_code/installation-setup.md#prerequisites) them: 
+To run our tool, you'll need the following packages. Refer to these detailed instructions to [install](https://github.com/cilantroxiao/SWAVE/blob/main/installation-setup.md#prerequisites) them: 
 
 - pandas, matplotlib, numpy, pathlib, glob, csv, os, argparse, difflib, scipy, seaborn, tkinter, time
 
@@ -49,7 +49,7 @@ To run our tool, you'll need the following packages. Refer to these detailed ins
 
 ### input.txt
 
-The input text file serves as a set of instructions for the visualization. Please refer to the [documentation](https://github.com/cilantroxiao/landsness_imaging/blob/aly_code/documentation.md#inputtxt) for more information.
+The input text file serves as a set of instructions for the visualization. Please refer to the [documentation](https://github.com/cilantroxiao/SWAVE/blob/main/documentation.md#inputtxt) for more information.
   
 An example of how input.txt could look:
 
@@ -77,7 +77,7 @@ Using Tkinter, you will be able to select the directory in which the data/files/
 <img width="500" alt="Screenshot 2024-04-16 at 2 42 48 PM" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/08779985-e5f3-4212-9b30-f53e31c211fe">
 
 ## Outputs
-For each iteration, a timestamped folder will be created including a text file with parameters and the corresponding visuals. Click [here](https://github.com/cilantroxiao/landsness_imaging/tree/aly_code/output/output_04-06-2024-18-52-14) to see an example output folder
+For each iteration, a timestamped folder will be created including a text file with parameters and the corresponding visuals. Click [here](https://github.com/cilantroxiao/SWAVE/tree/main/output/output_04-06-2024-18-52-14) to see an example output folder
 
 <img width="500" alt="Screenshot 2024-04-16 at 3 00 53 PM" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/81ce3387-298a-4ed5-88c0-c837730f3b70">
 
