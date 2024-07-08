@@ -84,4 +84,6 @@ For each iteration, a timestamped folder will be created including a text file w
 
 ## Liscenses / Legal
 
+SWAVE is open-source software and is licensed under the [MIT License](https://github.com/cilantroxiao/SWAVE/blob/main/LICENSE).
+
 
