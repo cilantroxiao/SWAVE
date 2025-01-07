@@ -5,6 +5,7 @@ import os
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import datetime
 
 def output_1(image):
     # Detect edges using Canny edge detection
@@ -29,7 +30,7 @@ def output_1(image):
     else:
         return image  # Return original image if no graph border is detected
 
-def calculate_overlap_index(image_paths, output_path, group_index):
+def calculate_overlap_index(image_paths, output_path):
     images = [cv2.imread(img_path, cv2.IMREAD_GRAYSCALE) for img_path in image_paths if os.path.exists(img_path)]
     if not images:
         print(f"No images found for: {image_paths}")
@@ -50,25 +51,17 @@ def calculate_overlap_index(image_paths, output_path, group_index):
 
     graph_composite_image = np.sum(aligned_graph_images, axis=0).astype(np.float32)  # Convert to float32
 
-
     # Normalize graph composite image for visualization
     graph_composite_normalized = cv2.normalize(
         graph_composite_image, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U
     )
 
-    # Save the composite image
-    composite_image_filename = os.path.join(output_path, f"wave_group_{group_index}_composite.png")
-    cv2.imwrite(composite_image_filename, graph_composite_normalized)
-    print(f"Saved composite image for Wave Group {group_index} at: {composite_image_filename}")
-
-    # Display graph-cropped composite and completeness index
-    plt.figure(figsize=(10, 5))
-    plt.subplot(1, 2, 1)
-    plt.title("Graph-Cropped Composite Image")
-    plt.imshow(graph_composite_normalized, cmap='gray')
-    plt.axis('off')
-
     return graph_composite_normalized
+
+def save_group_composite(output_path, group_index, composite_image):
+    composite_image_filename = os.path.join(output_path, f"group_{group_index}_composite.png")
+    cv2.imwrite(composite_image_filename, composite_image)
+    print(f"Saved composite image for Group {group_index} at: {composite_image_filename}")
 
 def open_directory():
     root = tk.Tk()
@@ -80,12 +73,21 @@ def open_directory():
         stage05_path = os.path.join(selected_directory, 'stage05_wave_characterization', 'time_stamp')
         csv_file_path = os.path.join(stage05_path, 'wavefronts_time_stamp.csv')
         label_planar_path = os.path.join(selected_directory, 'stage05_wave_characterization', 'label_planar')
-        output_dir = os.path.join(selected_directory, 'outputs_overlapping_index')
+        base_output_dir = os.path.join(selected_directory, 'outputs_overlapping_index')
 
-        # Create output directory if it doesn't exist
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-            print(f"Created output directory: {output_dir}")
+        # Create base output directory if it doesn't exist
+        if not os.path.exists(base_output_dir):
+            os.makedirs(base_output_dir)
+            print(f"Created base output directory: {base_output_dir}")
+
+        timestamp = datetime.datetime.now().strftime("%Y_%m_%d_%H-%M-%S")
+        mouse_name = os.path.basename(selected_directory)
+        output_path = os.path.join(base_output_dir, f"{timestamp}_{mouse_name}")
+
+        # Create directory for all groups combined
+        if not os.path.exists(output_path):
+            os.makedirs(output_path)
+            print(f"Created output directory for all group composites: {output_path}")
         
         if os.path.exists(csv_file_path):
             # Read the CSV file
@@ -109,15 +111,16 @@ def open_directory():
             # Append the last group
             wave_groups.append(current_group)
             
-            # Display the grouped waves and calculate the overlap index
+            # Calculate the overlap index for each group and save in the same directory
             if wave_groups:
                 for idx, group in enumerate(wave_groups):
-                    if len(group) > 1:  # Only display groups with more than one wavefront
+                    if len(group) > 1:  # Only process groups with more than one wavefront
                         image_paths = [os.path.join(label_planar_path, f"wave_{wave_id}.png") for wave_id, _ in group]
-                        print(f"\nWave Group {idx + 1}:")
+                        print(f"\nProcessing Group {idx + 1}:")
                         print([f"(ID: {wave_id}, Time: {timestamp}s)" for wave_id, timestamp in group])
                         print("Calculating overlap index...")
-                        calculate_overlap_index(image_paths, output_dir, idx + 1)
+                        composite_image = calculate_overlap_index(image_paths, output_path)
+                        save_group_composite(output_path, idx + 1, composite_image)
             else:
                 print("No grouped wavefronts found.")
         else:
