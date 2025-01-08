@@ -30,11 +30,11 @@ def output_1(image):
     else:
         return image  # Return original image if no graph border is detected
 
-def calculate_overlap_index(image_paths, output_path):
+def calculate_overlap_index(image_paths):
     images = [cv2.imread(img_path, cv2.IMREAD_GRAYSCALE) for img_path in image_paths if os.path.exists(img_path)]
     if not images:
         print(f"No images found for: {image_paths}")
-        return None
+        return None, []
     
     # Resize images to the smallest dimensions
     min_height = min(img.shape[0] for img in images)
@@ -56,12 +56,29 @@ def calculate_overlap_index(image_paths, output_path):
         graph_composite_image, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U
     )
 
-    return graph_composite_normalized
+    return graph_composite_normalized, aligned_graph_images
 
-def save_group_composite(output_path, group_index, composite_image):
-    composite_image_filename = os.path.join(output_path, f"group_{group_index}_composite.png")
-    cv2.imwrite(composite_image_filename, composite_image)
-    print(f"Saved composite image for Group {group_index} at: {composite_image_filename}")
+def save_group_composite(output_path, group_index, composite_image, individual_images):
+    composite_image_filename = os.path.join(output_path, f"group_{group_index}_composite_with_individuals.png")
+
+    # Create a visual layout: individual images on the left, composite on the right
+    num_individuals = len(individual_images)
+    fig, axs = plt.subplots(1, num_individuals + 1, figsize=(15, 5))
+
+    for i, img in enumerate(individual_images):
+        axs[i].imshow(img, cmap='gray')
+        axs[i].axis('off')
+        axs[i].set_title(f"Wave {i + 1}")
+
+    axs[-1].imshow(composite_image, cmap='gray')
+    axs[-1].axis('off')
+    axs[-1].set_title("Group Composite")
+
+    plt.tight_layout()
+    plt.savefig(composite_image_filename)
+    plt.close()
+
+    print(f"Saved composite with individual graphs for Group {group_index} at: {composite_image_filename}")
 
 def open_directory():
     root = tk.Tk()
@@ -119,8 +136,8 @@ def open_directory():
                         print(f"\nProcessing Group {idx + 1}:")
                         print([f"(ID: {wave_id}, Time: {timestamp}s)" for wave_id, timestamp in group])
                         print("Calculating overlap index...")
-                        composite_image = calculate_overlap_index(image_paths, output_path)
-                        save_group_composite(output_path, idx + 1, composite_image)
+                        composite_image, individual_images = calculate_overlap_index(image_paths)
+                        save_group_composite(output_path, idx + 1, composite_image, individual_images)
             else:
                 print("No grouped wavefronts found.")
         else:
