@@ -1,5 +1,3 @@
---s NREM REM KX
---f SLEEP_119_2_NREM_54 --freq
---f SLEEP_119_2_REM_54 --freq
---f ANESTH_EricMs1Ket_KX_16 --freq
---f CUMULATIVE --avg --v --freq --p --norm --n 2
+--s NREM
+--f SLEEP_119_2_NREM_55 --freq
+--f CUMULATIVE --avg --v --freq --p --norm --n 1

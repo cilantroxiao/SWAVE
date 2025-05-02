@@ -5,9 +5,12 @@ from pathlib import Path
 import csv
 import os
 import seaborn as sns
+import cv2
+import tkinter as tk
+import datetime
 grid_size = 128
 
-#helper function
+#helper functions
 def get_recording_length(path_head):
     #retrieve frequency divisor
     frequency_path = f'{path_head}\\stage05_wave_characterization\\annotations\\wavefronts_annotations.csv'
@@ -19,6 +22,85 @@ def get_recording_length(path_head):
         first_row = next(csv_reader)
         frequency = first_row[column_index]
         return float(frequency)
+
+def create_composite_folder(currdir):
+    composite_folder = os.path.join(currdir, "composites")
+    if not os.path.exists(composite_folder):
+        os.makedirs(composite_folder)
+        print(f"Created composite images folder: {composite_folder}")
+    return composite_folder
+
+def output_1(image):
+    edges = cv2.Canny(image, 50, 150)
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    graph_contour = None
+    max_area = 0
+    for contour in contours:
+        x, y, w, h = cv2.boundingRect(contour)
+        area = w * h
+        if area > max_area and w > 0.5 * image.shape[1] and h > 0.5 * image.shape[0]:
+            max_area = area
+            graph_contour = (x, y, w, h)
+    
+    if graph_contour:
+        x, y, w, h = graph_contour
+        return image[y:y+h, x:x+w]
+    else:
+        return image
+
+def calculate_overlap_index(image_paths):
+    images = [cv2.imread(img_path, cv2.IMREAD_COLOR) for img_path in image_paths if os.path.exists(img_path)]
+    if not images:
+        return None, []
+    
+    min_height = min(img.shape[0] for img in images)
+    min_width = min(img.shape[1] for img in images)
+    resized_images = [cv2.resize(img, (min_width, min_height)) for img in images]
+    
+    graph_cropped_images = [output_1(img) for img in resized_images]
+    min_height_cropped = min(img.shape[0] for img in graph_cropped_images)
+    min_width_cropped = min(img.shape[1] for img in graph_cropped_images)
+    aligned_graph_images = [cv2.resize(img, (min_width_cropped, min_height_cropped)) for img in graph_cropped_images]
+    
+    graph_composite_image = np.sum([cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) for img in aligned_graph_images], axis=0).astype(np.float32)
+    graph_composite_normalized = cv2.normalize(graph_composite_image, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+    
+    return graph_composite_normalized, resized_images
+
+def save_group_composite(output_path, group_index, composite_image, individual_images):
+    composite_image_filename = os.path.join(output_path, f'group_{group_index}_composite.png')
+    plt.imshow(composite_image, cmap='gray')
+    plt.axis('off')
+    plt.title(f'Group {group_index} Composite')
+    plt.savefig(composite_image_filename)
+    plt.close()
+
+def process_wavefronts(csv_file_path, label_planar_path, composite_folder):
+    print(f"Processing wavefronts from {csv_file_path}")
+    df = pd.read_csv(csv_file_path)
+    wave_groups = []
+    current_group = [(df.loc[0, 'wavefronts_id'], df.loc[0, 'time_stamp'])]
+    
+    for i in range(1, len(df)):
+        current_id = df.loc[i, 'wavefronts_id']
+        current_time = df.loc[i, 'time_stamp']
+        previous_time = df.loc[i - 1, 'time_stamp']
+        
+        if abs(current_time - previous_time) <= 0.5:
+            current_group.append((current_id, current_time))
+        else:
+            wave_groups.append(current_group)
+            current_group = [(current_id, current_time)]
+    
+    wave_groups.append(current_group)
+    
+    for idx, group in enumerate(wave_groups):
+        if len(group) > 1:
+            image_paths = [os.path.join(label_planar_path, f"wave_{wave_id}.png") for wave_id, _ in group]
+            composite_image, individual_images = calculate_overlap_index(image_paths)
+            save_group_composite(composite_folder, idx + 1, composite_image, individual_images)
+
 
 #visualization functions
 def Polar_Histogram(path_head, filename, wave_ids, currdir):
@@ -228,13 +310,20 @@ def Freq_Waves_Topo(path_head, filename, currdir):
 
 def run(data_path, filename, wave_ids, args, currdir):
     path_head = os.path.join(data_path, filename)
-    Polar_Histogram(path_head, filename, wave_ids, currdir)
-    Velocity_CSVs(path_head, filename, wave_ids, currdir)
-    Planarity(path_head, filename, wave_ids, currdir)
-    Num_Waves(path_head, filename, wave_ids, currdir)
-    Num_Waves_Topo(path_head, filename, currdir)
+    stage05_path = os.path.join(path_head, 'stage05_wave_characterization', 'time_stamp')
+    csv_file_path = os.path.join(stage05_path, 'wavefronts_time_stamp.csv')
+    label_planar_path = os.path.join(path_head, 'stage05_wave_characterization', 'label_planar')
     
-    #freq flag
-    if args.freq:
-        Freq_Waves(path_head, filename,currdir)
-        Freq_Waves_Topo(path_head, filename, currdir)
+    
+    composite_folder = create_composite_folder(currdir)
+    process_wavefronts(csv_file_path, label_planar_path, composite_folder)
+    # Polar_Histogram(path_head, filename, wave_ids, currdir)
+    # Velocity_CSVs(path_head, filename, wave_ids, currdir)
+    # Planarity(path_head, filename, wave_ids, currdir)
+    # Num_Waves(path_head, filename, wave_ids, currdir)
+    # Num_Waves_Topo(path_head, filename, currdir)
+    
+    # #freq flag
+    # if args.freq:
+    #     Freq_Waves(path_head, filename,currdir)
+    #     Freq_Waves_Topo(path_head, filename, currdir)
