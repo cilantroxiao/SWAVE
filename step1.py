@@ -69,10 +69,41 @@ def calculate_overlap_index(image_paths):
     return graph_composite_normalized, resized_images
 
 def save_group_composite(output_path, group_index, composite_image, individual_images):
-    composite_image_filename = os.path.join(output_path, f'group_{group_index}_composite.png')
-    plt.imshow(composite_image, cmap='gray')
-    plt.axis('off')
-    plt.title(f'Group {group_index} Composite')
+    composite_image_filename = os.path.join(output_path, f"group_{group_index}_composite_with_individuals.png")
+
+    # Create a visual layout: individual images on the left, composite on the right
+    num_individuals = len(individual_images)
+    fig, axs = plt.subplots(1, 2, figsize=(15, 10), gridspec_kw={'width_ratios': [2, 1]})
+
+    # Left: Grid of individual input images
+    num_rows = (num_individuals + 1) // 2
+    fig_individuals, axs_individuals = plt.subplots(num_rows, 2, figsize=(10, 10))
+    axs_individuals = axs_individuals.flatten()
+
+    for i, img in enumerate(individual_images):
+        axs_individuals[i].imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))  # Convert to RGB for display
+        axs_individuals[i].axis('off')
+        axs_individuals[i].set_title(f"Wave {i + 1}")
+
+    for j in range(len(individual_images), len(axs_individuals)):
+        axs_individuals[j].axis('off')  # Hide empty subplots
+
+    fig_individuals.suptitle("Original Wave Images")
+    fig_individuals.tight_layout()
+    individual_grid_path = os.path.join(output_path, f"group_{group_index}_individuals_grid.png")
+    plt.savefig(individual_grid_path)
+    plt.close(fig_individuals)
+
+    # Right: Composite image
+    axs[0].imshow(plt.imread(individual_grid_path))  # Load saved grid image for display
+    axs[0].axis('off')
+    axs[0].set_title("Original Input Waves")
+
+    axs[1].imshow(composite_image, cmap='gray')
+    axs[1].axis('off')
+    axs[1].set_title("Group Composite")
+
+    plt.tight_layout()
     plt.savefig(composite_image_filename)
     plt.close()
 
