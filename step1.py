@@ -345,16 +345,19 @@ def run(data_path, filename, wave_ids, args, currdir):
     csv_file_path = os.path.join(stage05_path, 'wavefronts_time_stamp.csv')
     label_planar_path = os.path.join(path_head, 'stage05_wave_characterization', 'label_planar')
     
-    
-    composite_folder = create_composite_folder(currdir)
-    process_wavefronts(csv_file_path, label_planar_path, composite_folder)
-    # Polar_Histogram(path_head, filename, wave_ids, currdir)
-    # Velocity_CSVs(path_head, filename, wave_ids, currdir)
-    # Planarity(path_head, filename, wave_ids, currdir)
-    # Num_Waves(path_head, filename, wave_ids, currdir)
-    # Num_Waves_Topo(path_head, filename, currdir)
-    
-    # #freq flag
-    # if args.freq:
-    #     Freq_Waves(path_head, filename,currdir)
-    #     Freq_Waves_Topo(path_head, filename, currdir)
+
+    Polar_Histogram(path_head, filename, wave_ids, currdir)
+    Velocity_CSVs(path_head, filename, wave_ids, currdir)
+    Planarity(path_head, filename, wave_ids, currdir)
+    Num_Waves(path_head, filename, wave_ids, currdir)
+    Num_Waves_Topo(path_head, filename, currdir)
+
+    #overlap flag
+    if args.overlap:
+        composite_folder = create_composite_folder(currdir)
+        process_wavefronts(csv_file_path, label_planar_path, composite_folder)
+
+    #freq flag
+    if args.freq:
+        Freq_Waves(path_head, filename,currdir)
+        Freq_Waves_Topo(path_head, filename, currdir)
