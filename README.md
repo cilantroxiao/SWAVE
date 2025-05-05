@@ -31,9 +31,15 @@ Key features of our visualization solution include:
 
   <img width="500" alt="Wave Frequency Example" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/1b72e2ac-fef0-4c58-a3cd-07d1767e2c8c">
 
+5. Overlap Index: Identify overlapping wave events that appear as a single wave by visualizing the individual wavefronts that contribute to the composite, improving clarity in complex propagation patterns.
 
+### Individual Waves
+<img width="640" alt="overlap index individual example" src="https://github.com/user-attachments/assets/e0756972-e948-4d88-9acf-ab32d9c21159" />
 
-5. FOR THE FUTURE: Locality Index to access local vs global waves
+### Composite Image with Individual Waves
+<img width="978" alt="overlap index composite with individual example" src="https://github.com/user-attachments/assets/a0b127a9-68d3-4805-a0a9-9f2a150c3087" />
+
+6. FOR THE FUTURE: Locality Index to access local vs global waves
 
 
 Together, COBRAWAP and SWAVE form a comprehensive and accessible platform for cortical wave research, fostering interdisciplinary collaboration, knowledge sharing, and ultimately driving scientific progress in this field.
