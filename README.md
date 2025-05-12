@@ -15,34 +15,35 @@ For researchers studying cortical wave-like activity and Peak/Trough state dynam
 
 Our visualization tool is designed to complement and collaborate with COBRAWAP, forming a unified and user-friendly platform for comprehensive cortical wave analysis. By integrating with COBRAWAP's outputs, our tool bridges the gap between raw analysis results and their effective interpretation, empowering researchers with both programming and non-programming backgrounds to explore and understand the dynamics of cortical wave activity and Peak/Trough state detections.
 
-Key features of our visualization solution include:
+---
 
-1. Polar Histograms: Gain insights into the directional properties of cortical waves by visualizing their propagation directions, facilitating the identification of dominant propagation patterns.
-  <img width="500" alt="Polar Histogram Example" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/c4412ac1-c14c-4b02-b17a-640f313fef7f">
+**1.** **Polar Histograms**  
+Gain insights into the directional properties of cortical waves by visualizing their propagation directions, facilitating the identification of dominant propagation patterns.  
+<img width="500" alt="Polar Histogram Example" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/c4412ac1-c14c-4b02-b17a-640f313fef7f">
 
-2. Velocity Heatmaps: Explore the spatial distribution of wave velocities across the imaging field, revealing regions with distinct wave propagation speeds and potential correlations with underlying cortical structures.
-  <img width="500" alt="Velocity Heatmap Example" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/972b635a-b196-43ea-8e36-2a8739e6bcdf">
+**2.** **Velocity Heatmaps**  
+Explore the spatial distribution of wave velocities across the imaging field, revealing regions with distinct wave propagation speeds and potential correlations with underlying cortical structures.  
+<img width="500" alt="Velocity Heatmap Example" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/972b635a-b196-43ea-8e36-2a8739e6bcdf">
 
-3. Planarity Visualizations: Assess the planarity (cortical vs. subcortical) of the waves through intuitive visualizations that highlight deviations from planarity.
+**3.** **Planarity Visualizations**  
+Assess the planarity (cortical vs. subcortical) of the waves through intuitive visualizations that highlight deviations from planarity.  
+<img width="500" alt="Planarity Example" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/c5f9964e-d180-47c4-836e-f0016a27514f">
 
-  <img width="500" alt="Planarity Example" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/c5f9964e-d180-47c4-836e-f0016a27514f">
+**4.** **Wave Frequency**  
+Analyze the number of waves per unit of time distribution of cortical waves, revealing patterns of activity across different regions.  
+<img width="500" alt="Wave Frequency Example" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/1b72e2ac-fef0-4c58-a3cd-07d1767e2c8c">
 
-4. Wave Frequency: Analyze the number of waves per unit of time distribution of cortical waves, revealing patterns of activity across different regions.
+**5.** **Overlap Index**  
+Identify overlapping wave events that appear as a single wave by visualizing the individual wavefronts that contribute to the composite, improving clarity in complex propagation patterns.
 
-  <img width="500" alt="Wave Frequency Example" src="https://github.com/cilantroxiao/landsness_imaging/assets/79768734/1b72e2ac-fef0-4c58-a3cd-07d1767e2c8c">
-
-5. Overlap Index: Identify overlapping wave events that appear as a single wave by visualizing the individual wavefronts that contribute to the composite, improving clarity in complex propagation patterns.
-
-  ### Individual Waves
+- *Individual Waves*  
   <img width="640" alt="overlap index individual example" src="https://github.com/user-attachments/assets/e0756972-e948-4d88-9acf-ab32d9c21159" />
 
-  ### Composite Image with Individual Waves
+- *Composite Image with Individual Waves*  
   <img width="978" alt="overlap index composite with individual example" src="https://github.com/user-attachments/assets/a0b127a9-68d3-4805-a0a9-9f2a150c3087" />
 
-6. FOR THE FUTURE: Locality Index to access local vs global waves
-
-
-Together, COBRAWAP and SWAVE form a comprehensive and accessible platform for cortical wave research, fostering interdisciplinary collaboration, knowledge sharing, and ultimately driving scientific progress in this field.
+**6.** **FOR THE FUTURE: Locality Index**  
+A planned feature to assess local vs. global waves.
 
 ## Installation/Set-up
 Before using our visualization tool, ensure that you have set up and run the COBRAWAP pipeline to process your data. Follow the installation and usage instructions provided in the [COBRAWAP](https://cobrawap.readthedocs.io/en/latest/pipeline.html) documentation to analyze your data and generate the necessary output files and file structure.
